@@ -1,6 +1,6 @@
-const CACHE_STATIC = 'static-v8'
-const CACHE_PAGES = 'pages-v8'
-const CACHE_API = 'api-v8'
+const CACHE_STATIC = 'static-v9'
+const CACHE_PAGES = 'pages-v9'
+const CACHE_API = 'api-v9'
 
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing...')
@@ -78,14 +78,6 @@ async function cacheFirst(request) {
   }
 }
 
-function hashStr(str) {
-  let hash = 5381
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0
-  }
-  return hash.toString(36)
-}
-
 function sessionKey(request) {
   const cookieHeader = request.headers.get('cookie')
   if (!cookieHeader) return 'anon'
@@ -93,13 +85,9 @@ function sessionKey(request) {
   for (const part of parts) {
     const pair = part.trim().split('=')
     const name = pair[0]
-    if (
-      name === 'sessionToken' ||
-      name === 'authjs.session-token' ||
-      name === '__Secure-authjs.session-token'
-    ) {
+    if (name === 'sw_session_id') {
       const value = pair.slice(1).join('=')
-      if (value) return hashStr(name + '=' + value)
+      if (value) return value
     }
   }
   return 'anon'

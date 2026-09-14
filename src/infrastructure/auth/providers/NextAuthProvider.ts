@@ -11,6 +11,7 @@ import type {
 } from '../AuthProvider'
 
 const SESSION_COOKIE = 'sessionToken'
+const SW_SESSION_COOKIE = 'sw_session_id'
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 dias
 const BCRYPT_SALT = 10
 
@@ -51,6 +52,17 @@ export class NextAuthProvider implements AuthProvider {
     }
 
     cookieStore.set(SESSION_COOKIE, token, cookieOptions)
+
+    const swCookieOptions: Record<string, unknown> = {
+      maxAge: SESSION_MAX_AGE,
+      path: '/',
+    }
+    if (secure) {
+      swCookieOptions.secure = true
+      swCookieOptions.sameSite = 'lax'
+    }
+    cookieStore.set(SW_SESSION_COOKIE, crypto.randomUUID(), swCookieOptions)
+
     return token
   }
 
@@ -107,6 +119,8 @@ export class NextAuthProvider implements AuthProvider {
       await prisma.sessao.deleteMany({ where: { token } })
       cookieStore.delete(SESSION_COOKIE)
     }
+
+    cookieStore.delete(SW_SESSION_COOKIE)
 
     try {
       await signOut({ redirect: false })
