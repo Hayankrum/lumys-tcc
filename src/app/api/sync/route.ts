@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'criar_questionario') {
-      const { titulo, descricao, perguntas, encerraEm, anonimo, corTema, usuariosEsperados } = data
+      const { titulo, descricao, perguntas, encerraEm, anonimo, corTema, usuariosEsperados, resultadosVisiveis } = data
 
       if (!titulo || !perguntas) {
         return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 })
@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
         encerraEm ? new Date(encerraEm) : null,
         anonimo,
         corTema,
-        usuariosEsperados ?? null
+        usuariosEsperados ?? null,
+        resultadosVisiveis
       )
 
       if (result.error) {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'editar_questionario') {
-      const { id, titulo, descricao, perguntas, encerraEm, anonimo, corTema, usuariosEsperados } = data
+      const { id, titulo, descricao, perguntas, encerraEm, anonimo, corTema, usuariosEsperados, resultadosVisiveis } = data
 
       if (!id || !titulo || !perguntas) {
         return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 })
@@ -82,7 +83,8 @@ export async function POST(request: NextRequest) {
           encerraEm ? new Date(encerraEm) : null,
           anonimo,
           corTema,
-          usuariosEsperados ?? null
+          usuariosEsperados ?? null,
+          resultadosVisiveis
         )
 
         if (result && result.error) {

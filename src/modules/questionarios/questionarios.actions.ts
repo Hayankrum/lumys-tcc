@@ -125,7 +125,8 @@ export async function criarQuestionario(
   encerraEm?: Date | null,
   anonimo?: boolean,
   corTema?: string,
-  usuariosEsperados?: number | null
+  usuariosEsperados?: number | null,
+  resultadosVisiveis?: boolean
 ) {
   const usuario = await getUsuarioLogado()
   if (!usuario) return { error: 'Você precisa estar logado para criar um questionário' }
@@ -145,7 +146,8 @@ export async function criarQuestionario(
       titulo: tituloClean,
       descricao: descricaoClean || null,
       encerraEm: encerraEm ?? null,
-      anonimo: anonimo ?? false,
+      anonimo: anonimo ?? true,
+      resultadosVisiveis: resultadosVisiveis ?? true,
       corTema: corTema || '#6366f1',
       usuariosEsperados: usuariosEsperados ?? null,
       autorId: usuario.id,
@@ -187,7 +189,8 @@ export async function editarQuestionario(
   encerraEm?: Date | null,
   anonimo?: boolean,
   corTema?: string,
-  usuariosEsperados?: number | null
+  usuariosEsperados?: number | null,
+  resultadosVisiveis?: boolean
 ) {
   const { error, questionario } = await obterQuestionarioDoUsuario(id)
   if (error) return { error }
@@ -232,6 +235,7 @@ export async function editarQuestionario(
         descricao: descricaoClean || null,
         encerraEm: encerraEm ?? undefined,
         anonimo: anonimo ?? undefined,
+        resultadosVisiveis: resultadosVisiveis ?? undefined,
         corTema: corTema ?? undefined,
         usuariosEsperados: usuariosEsperados ?? undefined,
         atualizadoEm: new Date(),
@@ -846,10 +850,17 @@ export async function obterResultados(
 ) {
   const questionario = await prisma.questionario.findUnique({
     where: { id: questionarioId },
-    select: { autorId: true },
+    select: { autorId: true, resultadosVisiveis: true },
   })
 
   if (!questionario) return { error: 'Questionário não encontrado' }
+
+  if (!questionario.resultadosVisiveis) {
+    const usuario = await getUsuarioLogado()
+    if (!usuario || (usuario.id !== questionario.autorId && !usuario.isAdmin)) {
+      return { error: 'Os resultados deste questionário não estão disponíveis' }
+    }
+  }
 
   const whereRespostas: Record<string, unknown> = {}
   if (filtros?.dataInicio && filtros.dataInicio.trim()) {
@@ -867,6 +878,9 @@ export async function obterResultados(
   const dados = await prisma.questionario.findUnique({
     where: { id: questionarioId },
     include: {
+      autor: {
+        select: { id: true, nome: true },
+      },
       perguntas: {
         include: {
           opcoes: { orderBy: { ordem: 'asc' } },
@@ -891,6 +905,9 @@ export async function obterResultados(
           criadoEm: true,
           usuario: {
             select: { id: true, nome: true },
+          },
+          valores: {
+            include: { opcao: { select: { texto: true } } },
           },
         },
         orderBy: { criadoEm: 'desc' },
@@ -984,6 +1001,7 @@ export async function obterResultados(
       status: dados.status,
       corTema: dados.corTema,
       anonimo: dados.anonimo,
+      autor: dados.autor,
     },
     totalRespostas: dados._count.respostas,
     resultados,
@@ -991,6 +1009,13 @@ export async function obterResultados(
       id: r.id,
       nome: r.nomeAnonimo || r.usuario.nome,
       criadoEm: r.criadoEm,
+      valores: r.valores.map((v) => ({
+        perguntaId: v.perguntaId,
+        texto: v.texto,
+        opcaoId: v.opcaoId,
+        opcao: v.opcao ? v.opcao.texto : null,
+        valorNumerico: v.valorNumerico,
+      })),
     })),
   }
 }

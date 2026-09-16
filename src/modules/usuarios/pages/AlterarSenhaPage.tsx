@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { alterarSenha } from '../usuarios.actions'
 import Link from 'next/link'
 import CampoSenha from '../components/CampoSenha'
@@ -19,6 +19,9 @@ async function alterarAction(_prev: { error?: string; success?: string } | null,
 
 export default function AlterarSenhaPage({ usuarioId }: Props) {
   const [estado, formAction, pending] = useActionState(alterarAction, null)
+  const [senhaAtual, setSenhaAtual] = useState('')
+  const [novaSenha, setNovaSenha] = useState('')
+  const [confirmarSenha, setConfirmarSenha] = useState('')
 
   return (
     <div>
@@ -56,11 +59,11 @@ export default function AlterarSenhaPage({ usuarioId }: Props) {
           </div>
         )}
 
-        <CampoSenha name="senhaAtual" label="Senha atual" />
+        <CampoSenha name="senhaAtual" label="Senha atual" value={senhaAtual} onChange={setSenhaAtual} />
 
-        <CampoSenha name="novaSenha" label="Nova senha" minLength={8} placeholder="Mínimo 8 caracteres" />
+        <CampoSenha name="novaSenha" label="Nova senha" minLength={8} placeholder="Mínimo 8 caracteres" value={novaSenha} onChange={setNovaSenha} />
 
-        <CampoSenha name="confirmarSenha" label="Confirmar nova senha" minLength={8} placeholder="Repita a nova senha" />
+        <CampoSenha name="confirmarSenha" label="Confirmar nova senha" minLength={8} placeholder="Repita a nova senha" value={confirmarSenha} onChange={setConfirmarSenha} />
 
         <button
           type="submit"

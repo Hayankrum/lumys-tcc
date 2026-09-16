@@ -9,9 +9,11 @@ interface Props {
   required?: boolean
   minLength?: number
   defaultValue?: string
+  value?: string
+  onChange?: (valor: string) => void
 }
 
-export default function CampoSenha({ name, placeholder = '••••••••', label = 'Senha', required = true, minLength, defaultValue }: Props) {
+export default function CampoSenha({ name, placeholder = '••••••••', label = 'Senha', required = true, minLength, defaultValue, value, onChange }: Props) {
   const [visivel, setVisivel] = useState(false)
 
   return (
@@ -24,7 +26,9 @@ export default function CampoSenha({ name, placeholder = '•••••••�
           placeholder={placeholder}
           required={required}
           minLength={minLength}
-          defaultValue={defaultValue}
+          defaultValue={value === undefined ? defaultValue : undefined}
+          value={value}
+          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
           className="w-full rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none transition-colors"
           style={{ backgroundColor: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}
         />

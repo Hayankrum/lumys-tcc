@@ -14,49 +14,83 @@ interface ResultadoItem {
   media?: number
   min?: number
   max?: number
-  respostas?: string[]
+}
+
+interface Respondente {
+  id: number
+  nome: string
+  criadoEm: string
+  valores: {
+    perguntaId: number
+    texto: string | null
+    opcaoId: number | null
+    opcao: string | null
+    valorNumerico: number | null
+  }[]
 }
 
 interface Props {
   titulo: string
   resultados: ResultadoItem[]
   totalRespostas: number
+  respondentes?: Respondente[]
 }
 
-export default function ExportarCSV({ titulo, resultados, totalRespostas }: Props) {
+function esc(valor: string | number | undefined | null): string {
+  return `"${String(valor ?? '').replace(/"/g, '""')}"`
+}
+
+function valorDoRespondente(resp: Respondente, resultado: ResultadoItem): string {
+  const valores = resp.valores.filter((v) => v.perguntaId === resultado.perguntaId)
+  if (resultado.tipo === 'multipla_escolha') {
+    return valores.filter((v) => v.opcao).map((v) => v.opcao).join('; ')
+  }
+  if (resultado.tipo === 'escolha_unica') {
+    return valores.find((v) => v.opcao)?.opcao ?? ''
+  }
+  if (resultado.tipo === 'escala') {
+    return String(valores.find((v) => v.valorNumerico != null)?.valorNumerico ?? '')
+  }
+  return valores
+    .map((v) => v.texto || '')
+    .filter(Boolean)
+    .join('; ')
+}
+
+export default function ExportarCSV({ titulo, resultados, totalRespostas, respondentes }: Props) {
   function gerarCSV() {
     const linhas: string[] = []
 
-    linhas.push(`"Questionário";"${titulo}"`)
-    linhas.push(`"Total de Respostas";"${totalRespostas}"`)
+    // ---------- Cabeçalho ----------
+    linhas.push(['Questionário', titulo].map(esc).join(';'))
+    linhas.push(['Total de Respostas', totalRespostas].map(esc).join(';'))
     linhas.push('')
 
-    for (const resultado of resultados) {
-      linhas.push(`"Pergunta";"${resultado.texto}"`)
-      linhas.push(`"Tipo";"${resultado.tipo}"`)
-      linhas.push(`"Respostas";"${resultado.totalRespostas}"`)
-
-      if (resultado.distribuicao) {
-        linhas.push('"Opção";"Quantidade";"Percentual"')
-        for (const opcao of resultado.distribuicao) {
-          linhas.push(`"${opcao.texto}";"${opcao.count}";"${opcao.percentual}%"`)
+    // ---------- Resumo por pergunta ----------
+    linhas.push(['Pergunta', 'Tipo', 'Resposta / Opção', 'Quantidade', 'Percentual'].map(esc).join(';'))
+    for (const r of resultados) {
+      if (r.distribuicao) {
+        for (const opcao of r.distribuicao) {
+          linhas.push([r.texto, r.tipo, opcao.texto, opcao.count, `${opcao.percentual}%`].map(esc).join(';'))
         }
+      } else if (r.media !== undefined) {
+        linhas.push([r.texto, r.tipo, 'Média', r.media, `min ${r.min ?? '-'} / max ${r.max ?? '-'}`].map(esc).join(';'))
+      } else {
+        linhas.push([r.texto, r.tipo, 'Respostas textuais', r.totalRespostas, ''].map(esc).join(';'))
       }
+    }
+    linhas.push('')
 
-      if (resultado.media !== undefined) {
-        linhas.push(`"Média";"${resultado.media}"`)
-        if (resultado.min !== undefined) linhas.push(`"Mínimo";"${resultado.min}"`)
-        if (resultado.max !== undefined) linhas.push(`"Máximo";"${resultado.max}"`)
+    // ---------- Respostas individuais (uma linha por respondente) ----------
+    const colunas = ['Respondente', 'Data', ...resultados.map((r) => r.texto)]
+    linhas.push(colunas.map(esc).join(';'))
+
+    for (const resp of respondentes ?? []) {
+      const linha = [resp.nome, new Date(resp.criadoEm).toLocaleDateString('pt-BR')]
+      for (const resultado of resultados) {
+        linha.push(valorDoRespondente(resp, resultado))
       }
-
-      if (resultado.respostas) {
-        linhas.push('"Respostas Textuais"')
-        for (const resp of resultado.respostas) {
-          linhas.push(`"${resp.replace(/"/g, '""')}"`)
-        }
-      }
-
-      linhas.push('')
+      linhas.push(linha.map(esc).join(';'))
     }
 
     return linhas.join('\n')
@@ -85,7 +119,7 @@ export default function ExportarCSV({ titulo, resultados, totalRespostas }: Prop
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      Exportar CSV
+      Exportar resultados (.csv)
     </button>
   )
 }

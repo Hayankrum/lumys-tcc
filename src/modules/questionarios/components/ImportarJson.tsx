@@ -29,6 +29,7 @@ interface MetaData {
   descricao?: string
   encerraEm?: string
   anonimo?: boolean
+  resultadosVisiveis?: boolean
   corTema?: string
   usuariosEsperados?: number
 }
@@ -42,6 +43,7 @@ const EXEMPLO_JSON = `{
   "descricao": "Descricao opcional do questionario",
   "encerraEm": "2026-12-31T23:59",
   "anonimo": false,
+  "resultadosVisiveis": true,
   "corTema": "#6366f1",
   "usuariosEsperados": 50,
   "perguntas": [
@@ -125,6 +127,7 @@ export default function ImportarJson({ onImport }: Props) {
       if (dados.descricao) novaMeta.descricao = dados.descricao
       if (dados.encerraEm) novaMeta.encerraEm = dados.encerraEm
       if (dados.anonimo !== undefined) novaMeta.anonimo = !!dados.anonimo
+      if (dados.resultadosVisiveis !== undefined) novaMeta.resultadosVisiveis = !!dados.resultadosVisiveis
       if (dados.corTema) novaMeta.corTema = dados.corTema
       if (dados.usuariosEsperados) novaMeta.usuariosEsperados = Number(dados.usuariosEsperados)
       if (Object.keys(novaMeta).length > 0) setMeta(novaMeta)
@@ -337,6 +340,7 @@ export default function ImportarJson({ onImport }: Props) {
                   {meta.descricao && <p style={{ color: 'var(--text-secondary)' }}><strong>Descrição:</strong> {meta.descricao}</p>}
                   {meta.encerraEm && <p style={{ color: 'var(--text-secondary)' }}><strong>Encerra em:</strong> {new Date(meta.encerraEm).toLocaleString('pt-BR')}</p>}
                   {meta.anonimo !== undefined && <p style={{ color: 'var(--text-secondary)' }}><strong>Anônimo:</strong> {meta.anonimo ? 'Sim' : 'Não'}</p>}
+                  {meta.resultadosVisiveis !== undefined && <p style={{ color: 'var(--text-secondary)' }}><strong>Resultados visíveis:</strong> {meta.resultadosVisiveis ? 'Sim' : 'Não'}</p>}
                   {meta.corTema && (
                     <p className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <strong>Cor do tema:</strong>

@@ -81,7 +81,8 @@ model Questionario {
   titulo       String
   descricao    String?
   status       String      @default("rascunho")
-  anonimo      Boolean     @default(false)
+  anonimo      Boolean     @default(true)
+  resultadosVisiveis Boolean @default(true)
   corTema      String?     @default("#6366f1")
   criadoEm     DateTime    @default(now())
   atualizadoEm DateTime    @updatedAt

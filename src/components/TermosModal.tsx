@@ -26,7 +26,7 @@ export default function TermosModal({ isOpen, onClose, readonly = false }: Termo
       >
         <div className="px-6 pt-6 pb-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border-color)' }}>
           <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-            Termos de Uso e Compromisso
+            Termo de Compromisso e Responsabilidade
           </h1>
           {onClose && (
             <button
@@ -44,53 +44,187 @@ export default function TermosModal({ isOpen, onClose, readonly = false }: Termo
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 prose prose-sm max-w-none" style={{ color: 'var(--text-secondary)' }}>
-          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>1. Aceitação dos Termos</h2>
           <p className="mb-4">
-            Ao acessar e utilizar esta plataforma, você concorda em cumprir e estar vinculado a estes Termos de Uso.
-            Se não concordar com algum dos termos, não utilize a plataforma.
+            Ao utilizar o Lumys para criar ou responder questionários, o usuário declara estar ciente e de acordo com
+            as condições estabelecidas neste Termo.
           </p>
 
-          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>2. Uso da Plataforma</h2>
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>1. Sobre o Lumys</h2>
           <p className="mb-4">
-            Você concorda em utilizar a plataforma de forma ética e em conformidade com todas as leis e regulamentações aplicáveis.
-            É proibido utilizar a plataforma para atividades ilegais, fraudulentas ou que violem direitos de terceiros.
+            O Lumys é uma plataforma para criação, disponibilização e gerenciamento de questionários.
+          </p>
+          <p className="mb-4">
+            A plataforma disponibiliza recursos para que seus usuários possam criar questionários, coletar respostas,
+            visualizar resultados por meio de uma dashboard e exportar os dados coletados em formato CSV.
+          </p>
+          <p className="mb-4">
+            O Lumys funciona como uma ferramenta tecnológica e não participa da elaboração, validação ou interpretação
+            dos questionários criados por seus usuários.
           </p>
 
-          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>3. Conteúdo do Usuário</h2>
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>2. Responsabilidade pelo questionário</h2>
           <p className="mb-4">
-            Você é responsável por todo o conteúdo que publica na plataforma. Ao publicar conteúdo, você declara que possui
-            os direitos necessários e que o conteúdo não viola direitos de terceiros.
+            O criador de um questionário é responsável por seu conteúdo, finalidade e utilização.
+          </p>
+          <p className="mb-4">
+            Isso inclui, entre outros aspectos, as perguntas apresentadas, as informações solicitadas, a forma de
+            divulgação do questionário, a utilização das respostas e a interpretação ou divulgação dos resultados.
+          </p>
+          <p className="mb-4">
+            O fato de um questionário estar disponível no Lumys não significa que seu conteúdo tenha sido analisado,
+            aprovado ou validado pela plataforma.
+          </p>
+          <p className="mb-4">
+            O criador também é responsável por garantir que o conteúdo de seu questionário e a forma como as informações
+            são coletadas estejam de acordo com as regras e leis aplicáveis.
           </p>
 
-          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>4. Privacidade</h2>
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>3. Anonimato das respostas</h2>
           <p className="mb-4">
-            Respeitamos sua privacidade. Seus dados pessoais serão tratados de acordo com nossa política de privacidade.
-            Não compartilhamos suas informações com terceiros sem seu consentimento.
+            O Lumys disponibiliza ao criador a possibilidade de definir se as respostas de um questionário serão anônimas.
+          </p>
+          <p className="mb-4">
+            Por padrão, os questionários são configurados com o anonimato ativado.
+          </p>
+          <p className="mb-4">
+            Quando o anonimato estiver ativado, a identificação dos participantes não será apresentada na lista de
+            participantes do questionário, de acordo com o funcionamento da plataforma.
+          </p>
+          <p className="mb-4">
+            O criador poderá optar por desativar o anonimato. Nesse caso, os participantes poderão ser identificados
+            conforme as informações e recursos disponibilizados pelo sistema.
+          </p>
+          <p className="mb-4">
+            A configuração escolhida pelo criador é de sua responsabilidade, cabendo a ele informar aos participantes,
+            quando necessário, sobre a forma de identificação adotada no questionário.
           </p>
 
-          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>5. Responsabilidades</h2>
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>4. Disponibilidade dos resultados</h2>
           <p className="mb-4">
-            A plataforma é fornecida &quot;como está&quot;, sem garantias de qualquer tipo. Não nos responsabilizamos por danos
-            diretos ou indiretos decorrentes do uso da plataforma.
+            O Lumys permite que o criador determine se os resultados de um questionário estarão disponíveis para visualização.
+          </p>
+          <p className="mb-4">
+            Por padrão, os resultados são configurados como disponíveis.
+          </p>
+          <p className="mb-4">
+            O criador poderá alterar essa configuração e restringir o acesso aos resultados.
+          </p>
+          <p className="mb-4">
+            Quando os resultados estiverem disponíveis, a página de resultados e suas respectivas informações poderão
+            ser acessadas de acordo com as configurações do questionário.
+          </p>
+          <p className="mb-4">
+            O criador é responsável por decidir se deseja disponibilizar os resultados e pelas informações apresentadas
+            aos participantes ou a outras pessoas que tenham acesso ao questionário.
           </p>
 
-          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>6. Modificações</h2>
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>5. Configurações escolhidas pelo criador</h2>
           <p className="mb-4">
-            Reservamos o direito de modificar estes termos a qualquer momento. As modificações entram em vigor
-            imediatamente após a publicação na plataforma.
+            O criador do questionário é responsável pelas configurações aplicadas ao seu questionário, incluindo as
+            opções relacionadas ao anonimato das respostas e à disponibilidade dos resultados.
+          </p>
+          <p className="mb-4">
+            O Lumys disponibiliza essas opções como recursos de configuração, mas não determina qual configuração é
+            adequada para cada questionário.
+          </p>
+          <p className="mb-4">
+            O criador deve considerar a finalidade de sua pesquisa, a natureza das informações coletadas e as
+            expectativas dos participantes ao definir essas configurações.
           </p>
 
-          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>7. Compromisso</h2>
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>6. Resultados e sua interpretação</h2>
           <p className="mb-4">
-            Ao aceitar estes termos, você se compromete a:
+            Os resultados apresentados pelo Lumys são baseados nas respostas fornecidas pelos participantes.
+          </p>
+          <p className="mb-4">
+            A plataforma não garante que os resultados sejam completos, representativos, precisos ou cientificamente válidos.
+          </p>
+          <p className="mb-4">
+            A análise, interpretação, utilização e divulgação dos resultados são de responsabilidade do criador do questionário.
+          </p>
+          <p className="mb-4">
+            O Lumys não se responsabiliza por decisões ou conclusões tomadas pelo criador ou por terceiros com base nos
+            resultados apresentados.
+          </p>
+
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>7. Visualização e exportação dos dados</h2>
+          <p className="mb-4">
+            Quando a visualização dos resultados estiver habilitada pelo criador, o Lumys disponibilizará, na página de
+            resultados do questionário, os recursos de visualização e exportação das respostas coletadas.
+          </p>
+          <p className="mb-4">
+            Entre esses recursos está a possibilidade de exportar os dados em formato CSV.
+          </p>
+          <p className="mb-4">
+            Quando o anonimato estiver ativado, a identificação dos participantes não será apresentada na lista de
+            participantes. Quando o anonimato estiver desativado, o arquivo exportado poderá conter informações que
+            permitam a identificação dos participantes, conforme os dados disponibilizados pelo sistema.
+          </p>
+          <p className="mb-4">
+            Quando o criador desativar a visualização dos resultados, a página de resultados e seus respectivos
+            recursos, incluindo a exportação em formato CSV, ficarão indisponíveis.
+          </p>
+          <p className="mb-4">
+            O criador é responsável pelo armazenamento, utilização e compartilhamento dos dados após sua exportação,
+            bem como pela forma como esses dados serão utilizados.
+          </p>
+
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>8. Responsabilidade da plataforma</h2>
+          <p className="mb-4">
+            O Lumys disponibiliza a infraestrutura e as funcionalidades necessárias para o funcionamento dos questionários.
+          </p>
+          <p className="mb-4">
+            A plataforma não é responsável pelo conteúdo criado pelos usuários, pelas respostas fornecidas pelos
+            participantes, pela finalidade da coleta de informações, pela interpretação dos resultados ou pela utilização
+            posterior dos dados pelo criador.
+          </p>
+          <p className="mb-4">
+            A plataforma também não garante que um questionário criado por um usuário seja legítimo, correto, apropriado
+            ou adequado à finalidade informada pelo seu criador.
+          </p>
+
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>9. Uso adequado</h2>
+          <p className="mb-4">
+            O usuário se compromete a utilizar o Lumys de forma responsável e de acordo com a legislação aplicável.
+          </p>
+          <p className="mb-4">
+            Não devem ser utilizados os recursos da plataforma para criar questionários destinados à prática de
+            atividades ilícitas, fraude, obtenção indevida de informações ou violação de direitos de terceiros.
+          </p>
+          <p className="mb-4">
+            Caso seja identificado conteúdo que viole estas condições ou a legislação aplicável, o acesso ao questionário
+            poderá ser restringido ou removido, conforme aplicável.
+          </p>
+
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>10. Natureza acadêmica</h2>
+          <p className="mb-4">
+            O Lumys é um projeto desenvolvido como protótipo acadêmico para fins de demonstração e avaliação.
+          </p>
+          <p className="mb-4">
+            Por essa razão, determinadas funcionalidades, limitações e comportamentos do sistema poderão ser modificados
+            durante seu desenvolvimento.
+          </p>
+          <p className="mb-4">
+            Este Termo descreve as regras de utilização do protótipo e não constitui uma oferta de serviço comercial.
+          </p>
+
+          <h2 className="text-lg font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>11. Aceite</h2>
+          <p className="mb-4">
+            Ao criar ou utilizar um questionário no Lumys, o usuário declara que compreendeu que:
           </p>
           <ul className="list-disc pl-6 mb-4">
-            <li>Manter sua conta e senha seguras</li>
-            <li>Não compartilhar sua conta com terceiros</li>
-            <li>Reportar qualquer uso não autorizado de sua conta</li>
-            <li>Respeitar os direitos de outros usuários</li>
-            <li>Utilizar a plataforma de forma responsável</li>
+            <li>o criador é responsável pelo conteúdo e pela finalidade de seu questionário;</li>
+            <li>o criador é responsável pelas configurações escolhidas para anonimato e disponibilidade dos resultados;</li>
+            <li>o criador é responsável pela utilização e interpretação dos resultados obtidos;</li>
+            <li>as respostas são fornecidas pelos participantes por sua própria decisão;</li>
+            <li>o Lumys fornece a infraestrutura tecnológica para criação, coleta e apresentação dos questionários e resultados.</li>
           </ul>
+          <p className="mb-4">
+            O uso do Lumys representa a concordância do usuário com este Termo.
+          </p>
+
+          <p className="mt-6 font-semibold" style={{ color: 'var(--text-primary)' }}>Lumys — 2026</p>
+          <p className="mb-4">Projeto acadêmico desenvolvido por Richard Silva Almeida, no curso de Licenciatura em Computação.</p>
         </div>
 
         <div className="px-6 py-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
@@ -133,7 +267,7 @@ export default function TermosModal({ isOpen, onClose, readonly = false }: Termo
                   className="w-full font-medium rounded-lg px-6 py-3 transition-colors disabled:opacity-50"
                   style={{ backgroundColor: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)' }}
                 >
-                  {pending ? 'Aceitando...' : 'Aceitar Termos e Compromisso'}
+                  {pending ? 'Aceitando...' : 'Aceitar o Termo de Compromisso'}
                 </button>
               </form>
             </>

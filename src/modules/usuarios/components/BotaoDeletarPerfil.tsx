@@ -51,7 +51,7 @@ export default function BotaoDeletarPerfil({ id, temSenha }: Props) {
             </p>
             {temSenha && (
               <div className="mb-4">
-                <CampoSenha name="senha" label="Digite sua senha para confirmar" />
+                <CampoSenha name="senha" label="Digite sua senha para confirmar" value={senha} onChange={setSenha} />
               </div>
             )}
             {erro && (

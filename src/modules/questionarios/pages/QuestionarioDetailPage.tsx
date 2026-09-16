@@ -31,6 +31,7 @@ interface QuestionarioData {
   descricao: string | null
   status: string
   anonimo: boolean
+  resultadosVisiveis: boolean
   corTema: string | null
   criadoEm: string
   encerraEm: string | null
@@ -183,7 +184,12 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
 
       <div>
         <h1 className="text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{questionario.titulo}</h1>
-        <p className="text-sm mb-2" style={{ color: 'var(--text-tertiary)' }}>por {questionario.autor.nome}</p>
+        <p className="text-sm mb-2" style={{ color: 'var(--text-tertiary)' }}>
+          por{' '}
+          <Link href={`/usuarios/${questionario.autor.id}`} className="hover:underline" style={{ color: 'var(--text-primary)' }}>
+            {questionario.autor.nome}
+          </Link>
+        </p>
         {questionario.descricao && (
           <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>{questionario.descricao}</p>
         )}
@@ -196,6 +202,11 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
           </span>
           <span>{questionario.totalRespostas} {questionario.totalRespostas === 1 ? 'resposta' : 'respostas'}</span>
           {questionario.anonimo && <span>Anônimo</span>}
+          {questionario.resultadosVisiveis ? (
+            <span>Resultados públicos</span>
+          ) : (
+            <span>Resultados restritos</span>
+          )}
           {encerraData && <span>Encerra {encerraData.toLocaleDateString('pt-BR')}</span>}
           {questionario.usuariosEsperados && (
             <span>
@@ -349,10 +360,10 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
                         className="text-xs px-2 py-1 rounded"
                         style={{
                           backgroundColor: 'var(--input-bg)',
-                          color: opcao.correta ? '#22c55e' : 'var(--text-secondary)',
+                          color: isAutor && opcao.correta ? '#22c55e' : 'var(--text-secondary)',
                         }}
                       >
-                        {opcao.correta && '✓ '}{opcao.texto}
+                        {isAutor && opcao.correta && '✓ '}{opcao.texto}
                       </span>
                     ))}
                   </div>

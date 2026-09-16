@@ -215,16 +215,16 @@ export default function SobrePage() {
         </section>
 
         <section className="rounded-lg p-5" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
-          <h2 className="font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Termos de Uso e Compromisso</h2>
+          <h2 className="font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Termo de Compromisso e Responsabilidade</h2>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Consulte a qualquer momento os termos, o compromisso e as regras de uso da plataforma.
+            Consulte a qualquer momento o termo, o compromisso e as regras de uso da plataforma.
           </p>
           <button
             onClick={() => setTermosAbertos(true)}
             className="w-full font-medium rounded-lg px-6 py-3 text-sm transition-colors min-h-[44px]"
             style={{ backgroundColor: 'var(--btn-secondary-bg)', color: 'var(--text-primary)' }}
           >
-            Ver Termos de Uso e Compromisso
+            Ver Termo de Compromisso e Responsabilidade
           </button>
         </section>
 

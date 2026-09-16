@@ -18,6 +18,7 @@ interface ResultadoData {
     status: string
     corTema: string | null
     anonimo: boolean
+    autor: { id: number; nome: string }
   }
   totalRespostas: number
   resultados: {
@@ -43,6 +44,13 @@ interface ResultadoData {
     id: number
     nome: string
     criadoEm: string
+    valores: {
+      perguntaId: number
+      texto: string | null
+      opcaoId: number | null
+      opcao: string | null
+      valorNumerico: number | null
+    }[]
   }[]
 }
 
@@ -220,6 +228,12 @@ export default function ResultadosPage({ questionarioId }: Props) {
                 {dados.questionario.descricao}
               </p>
             )}
+            <p className="text-sm mt-1.5" style={{ color: 'var(--text-tertiary)' }}>
+              por{' '}
+              <Link href={`/usuarios/${dados.questionario.autor.id}`} className="hover:underline" style={{ color: 'var(--text-primary)' }}>
+                {dados.questionario.autor.nome}
+              </Link>
+            </p>
             <div className="flex items-center gap-2 mt-3 flex-wrap">
               <span
                 className="px-2 py-0.5 rounded-full text-xs font-medium"
@@ -238,6 +252,7 @@ export default function ResultadosPage({ questionarioId }: Props) {
             titulo={dados.questionario.titulo}
             resultados={dados.resultados}
             totalRespostas={dados.totalRespostas}
+            respondentes={dados.respondentes}
           />
         </div>
 
@@ -266,7 +281,7 @@ export default function ResultadosPage({ questionarioId }: Props) {
               </svg>
             }
           />
-          {dados.questionario.anonimo || dados.respondentes.length === 0 ? (
+          {dados.respondentes.length === 0 ? (
             <StatCard
               rotulo="Respondentes"
               valor="-"
@@ -307,10 +322,10 @@ export default function ResultadosPage({ questionarioId }: Props) {
       <FiltroResultados onFiltrar={handleFiltrar} loading={filtrando} />
 
       {/* Respondentes */}
-      {dados.respondentes.length > 0 && !dados.questionario.anonimo && (
+      {dados.respondentes.length > 0 && (
         <div className="card">
           <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-            Quem respondeu
+            Quem respondeu{dados.questionario.anonimo ? ' (anônimo)' : ''}
           </p>
           <div className="flex flex-wrap gap-2">
             {dados.respondentes.map((r) => (

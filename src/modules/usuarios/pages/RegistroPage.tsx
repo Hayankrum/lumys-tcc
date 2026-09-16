@@ -18,6 +18,10 @@ async function registrarAction(_prev: { error?: string } | null, formData: FormD
 export default function RegistroPage() {
   const [estado, formAction, pending] = useActionState(registrarAction, null)
   const [termosAbertos, setTermosAbertos] = useState(false)
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+  const [confirmarSenha, setConfirmarSenha] = useState('')
 
   return (
     <div>
@@ -42,6 +46,8 @@ export default function RegistroPage() {
             name="nome"
             placeholder="Seu nome"
             maxLength={50}
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
             className="rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors"
             style={{ backgroundColor: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}
           />
@@ -53,14 +59,16 @@ export default function RegistroPage() {
             name="email"
             type="email"
             placeholder="seu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors"
             style={{ backgroundColor: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}
           />
         </div>
 
-        <CampoSenha name="senha" label="Senha" minLength={8} />
+        <CampoSenha name="senha" label="Senha" minLength={8} value={senha} onChange={setSenha} />
 
-        <CampoSenha name="confirmarSenha" label="Confirmar senha" minLength={8} placeholder="Repita a senha" />
+        <CampoSenha name="confirmarSenha" label="Confirmar senha" minLength={8} placeholder="Repita a senha" value={confirmarSenha} onChange={setConfirmarSenha} />
 
         <div className="flex items-start gap-3">
           <input
@@ -78,7 +86,7 @@ export default function RegistroPage() {
               className="hover:underline cursor-pointer"
               style={{ color: 'var(--text-primary)' }}
             >
-              Termos de Uso e Compromisso
+              Termo de Compromisso e Responsabilidade
             </button>
           </label>
         </div>

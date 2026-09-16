@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { login } from '../usuarios.actions'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
@@ -14,6 +14,8 @@ async function loginAction(_prev: { error?: string } | null, formData: FormData)
 
 export default function LoginPage() {
   const [estado, formAction, pending] = useActionState(loginAction, null)
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
 
   return (
     <div>
@@ -37,12 +39,14 @@ export default function LoginPage() {
             name="email"
             type="email"
             placeholder="seu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors"
             style={{ backgroundColor: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}
           />
         </div>
 
-        <CampoSenha name="senha" label="Senha" />
+        <CampoSenha name="senha" label="Senha" value={senha} onChange={setSenha} />
 
         <button
           type="submit"

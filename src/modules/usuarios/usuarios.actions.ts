@@ -69,7 +69,7 @@ export async function deletarUsuario(id: number, senha: string) {
 export async function registrar(nome: string, email: string, senha: string, confirmarSenha: string, aceitouTermos: boolean) {
   if (nome.length > MAX_NOME) return { error: `Nome deve ter no máximo ${MAX_NOME} caracteres` }
   if (senha !== confirmarSenha) return { error: 'As senhas não conferem' }
-  if (!aceitouTermos) return { error: 'Você deve aceitar os Termos de Uso e Compromisso' }
+  if (!aceitouTermos) return { error: 'Você deve aceitar o Termo de Compromisso e Responsabilidade' }
 
   const erroSenha = validarSenha(senha)
   if (erroSenha) return { error: erroSenha }

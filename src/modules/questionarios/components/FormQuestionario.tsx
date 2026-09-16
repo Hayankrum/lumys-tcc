@@ -56,6 +56,7 @@ interface QuestionarioExistente {
   corTema?: string
   usuariosEsperados?: number | null
   anonimo?: boolean
+  resultadosVisiveis?: boolean
   perguntas: {
     id: number
     texto: string
@@ -391,7 +392,8 @@ export default function FormQuestionario({ questionario }: Props) {
   )
   const [corTema, setCorTema] = useState(questionario?.corTema || '#6366f1')
   const [usuariosEsperados, setUsuariosEsperados] = useState<string>(questionario?.usuariosEsperados?.toString() || '')
-  const [anonimo, setAnonimo] = useState(questionario?.anonimo ?? false)
+  const [anonimo, setAnonimo] = useState(questionario?.anonimo ?? true)
+  const [resultadosVisiveis, setResultadosVisiveis] = useState(questionario?.resultadosVisiveis ?? true)
 
   const isEdicao = !!questionario
 
@@ -485,7 +487,7 @@ export default function FormQuestionario({ questionario }: Props) {
     }
   }
 
-  function handleImportarJson(novasPerguntas: PerguntaData[], meta?: { titulo?: string; descricao?: string; encerraEm?: string; anonimo?: boolean; corTema?: string; usuariosEsperados?: number }) {
+  function handleImportarJson(novasPerguntas: PerguntaData[], meta?: { titulo?: string; descricao?: string; encerraEm?: string; anonimo?: boolean; resultadosVisiveis?: boolean; corTema?: string; usuariosEsperados?: number }) {
     setPerguntas((prev) => {
       const atualizadas = [...prev, ...novasPerguntas]
       atualizadas.forEach((p, i) => (p.ordem = i + 1))
@@ -495,6 +497,7 @@ export default function FormQuestionario({ questionario }: Props) {
     if (meta?.descricao && !descricao) setDescricao(meta.descricao)
     if (meta?.encerraEm && !encerraEm) setEncerraEm(meta.encerraEm)
     if (meta?.anonimo !== undefined) setAnonimo(meta.anonimo)
+    if (meta?.resultadosVisiveis !== undefined) setResultadosVisiveis(meta.resultadosVisiveis)
     if (meta?.corTema) setCorTema(meta.corTema)
     if (meta?.usuariosEsperados && !usuariosEsperados) setUsuariosEsperados(meta.usuariosEsperados.toString())
   }
@@ -521,6 +524,7 @@ export default function FormQuestionario({ questionario }: Props) {
               perguntas,
               encerraEm: encerraEmDate ? encerraEmDate.toISOString() : null,
               anonimo,
+              resultadosVisiveis,
               corTema,
               usuariosEsperados: usuariosEsperadosNum,
             },
@@ -550,9 +554,9 @@ export default function FormQuestionario({ questionario }: Props) {
     try {
       let resultado
       if (isEdicao) {
-        resultado = await editarQuestionario(questionario.id, titulo, descricao, perguntas, encerraEmDate, anonimo, corTema, usuariosEsperadosNum)
+        resultado = await editarQuestionario(questionario.id, titulo, descricao, perguntas, encerraEmDate, anonimo, corTema, usuariosEsperadosNum, resultadosVisiveis)
       } else {
-        resultado = await criarQuestionario(titulo, descricao, perguntas, encerraEmDate, anonimo, corTema, usuariosEsperadosNum)
+        resultado = await criarQuestionario(titulo, descricao, perguntas, encerraEmDate, anonimo, corTema, usuariosEsperadosNum, resultadosVisiveis)
       }
 
       if ('error' in resultado && resultado.error) {
@@ -744,6 +748,27 @@ export default function FormQuestionario({ questionario }: Props) {
             </p>
             <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
               Quando ativo, qualquer pessoa pode responder sem estar logada.
+            </p>
+          </div>
+        </label>
+
+        <label className="flex items-center gap-3 cursor-pointer rounded-lg p-3" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+          <div
+            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
+            style={{ backgroundColor: resultadosVisiveis ? 'var(--btn-primary-bg)' : 'var(--btn-secondary-bg)' }}
+            onClick={() => setResultadosVisiveis(!resultadosVisiveis)}
+          >
+            <span
+              className="inline-block h-4 w-4 transform rounded-full transition-transform"
+              style={{ backgroundColor: 'var(--btn-primary-text)', transform: resultadosVisiveis ? 'translateX(22px)' : 'translateX(2px)' }}
+            />
+          </div>
+          <div>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              Disponibilizar resultados para todos
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              Quando ativo, qualquer pessoa pode ver e baixar os resultados. Desative para restringir ao autor.
             </p>
           </div>
         </label>
