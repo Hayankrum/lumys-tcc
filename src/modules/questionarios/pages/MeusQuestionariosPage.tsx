@@ -1,9 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { listarMeusQuestionarios, deletarQuestionario, duplicarQuestionario, publicarQuestionario, encerrarQuestionario } from '../questionarios.actions'
 import BannerQuestionario from '../components/BannerQuestionario'
+import Paginacao from '@/components/Paginacao'
+import ProgressBar from '@/components/ProgressBar'
+import { QuestionarioListaSkeleton } from '@/components/Skeletons'
 
 interface Questionario {
   id: number
@@ -34,52 +37,73 @@ const STATUS_COLORS: Record<string, string> = {
 export default function MeusQuestionariosPage() {
   const [questionarios, setQuestionarios] = useState<Questionario[]>([])
   const [loading, setLoading] = useState(true)
+  const [carregandoPagina, setCarregandoPagina] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
   const [statusFiltro, setStatusFiltro] = useState('todos')
   const [pagina, setPagina] = useState(1)
   const [totalPaginas, setTotalPaginas] = useState(1)
   const [actionLoading, setActionLoading] = useState<number | null>(null)
+  const seqRef = useRef(0)
 
   const carregar = useCallback(async (p: number, buscaVal: string, statusVal: string) => {
-    const result = await listarMeusQuestionarios({
-      busca: buscaVal || undefined,
-      status: statusVal !== 'todos' ? statusVal : undefined,
-      pagina: p,
-      porPagina: 10,
-    })
-    if ('questionarios' in result) {
-      setQuestionarios(result.questionarios as unknown as Questionario[])
-      setTotalPaginas(result.paginas as number)
-    }
-    setLoading(false)
-  }, [])
+    const seq = ++seqRef.current
+    setCarregandoPagina(true)
 
-  useEffect(() => {
-    let cancelled = false
-    listarMeusQuestionarios({ pagina: 1, porPagina: 10 }).then((result) => {
-      if (cancelled) return
+    try {
+      const result = await listarMeusQuestionarios({
+        busca: buscaVal || undefined,
+        status: statusVal !== 'todos' ? statusVal : undefined,
+        pagina: p,
+        porPagina: 10,
+      })
+      if (seq !== seqRef.current) return
       if ('questionarios' in result) {
         setQuestionarios(result.questionarios as unknown as Questionario[])
         setTotalPaginas(result.paginas as number)
       }
-      setLoading(false)
-    })
+    } catch {
+      if (seq === seqRef.current) setErro('Erro ao carregar questionários. Tente novamente.')
+    } finally {
+      if (seq === seqRef.current) {
+        setLoading(false)
+        setCarregandoPagina(false)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    listarMeusQuestionarios({ pagina: 1, porPagina: 10 })
+      .then((result) => {
+        if (!active) return
+        if ('questionarios' in result) {
+          setQuestionarios(result.questionarios as unknown as Questionario[])
+          setTotalPaginas(result.paginas as number)
+        }
+      })
+      .catch(() => {
+        if (active) setErro('Erro ao carregar questionários. Tente novamente.')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
     return () => {
-      cancelled = true
+      active = false
     }
   }, [])
 
   function handleBuscar(e: React.FormEvent) {
     e.preventDefault()
+    setErro(null)
     setPagina(1)
-    setLoading(true)
     carregar(1, busca, statusFiltro)
   }
 
   function handleFiltrarStatus(status: string) {
     setStatusFiltro(status)
+    setErro(null)
     setPagina(1)
-    setLoading(true)
     carregar(1, busca, status)
   }
 
@@ -87,6 +111,7 @@ export default function MeusQuestionariosPage() {
     setActionLoading(id)
     await action()
     setLoading(true)
+    setCarregandoPagina(false)
     carregar(pagina, busca, statusFiltro)
     setActionLoading(null)
   }
@@ -103,7 +128,15 @@ export default function MeusQuestionariosPage() {
       alert(result.error)
     }
     setLoading(true)
+    setCarregandoPagina(false)
     carregar(pagina, busca, statusFiltro)
+  }
+
+  function handlePagina(p: number) {
+    if (p === pagina) return
+    setErro(null)
+    setPagina(p)
+    carregar(p, busca, statusFiltro)
   }
 
   return (
@@ -167,144 +200,136 @@ export default function MeusQuestionariosPage() {
         </div>
       </div>
 
-      {loading && (
-        <p style={{ color: 'var(--text-tertiary)' }}>Carregando...</p>
-      )}
-
-      {!loading && questionarios.length === 0 && (
-        <div className="text-center py-12">
-          <p className="mb-4" style={{ color: 'var(--text-tertiary)' }}>
-            {busca || statusFiltro !== 'todos' ? 'Nenhum questionário encontrado com esses filtros.' : 'Você ainda não criou nenhum questionário.'}
-          </p>
-          {!busca && statusFiltro === 'todos' && (
-            <Link
-              href="/questionarios/novo"
-              className="btn-primary"
-            >
-              Criar primeiro questionário
-            </Link>
-          )}
+      {erro && (
+        <div className="alert-error mb-4" role="alert">
+          {erro}
         </div>
       )}
 
-      <div className="flex flex-col gap-4">
-        {questionarios.map((q) => (
-          <div
-            key={q.id}
-            className="rounded-lg p-5 transition-colors"
-            style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
-          >
-            <Link
-              href={`/questionarios/${q.id}`}
-              className="block mb-3"
-              style={{ textDecoration: 'none' }}
-            >
-              <BannerQuestionario cor={q.corTema} compacto className="mb-3" />
-              <h2 className="font-medium text-lg mb-1" style={{ color: 'var(--text-primary)' }}>{q.titulo}</h2>
-              {q.descricao && (
-                <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{q.descricao}</p>
-              )}
-            </Link>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs mb-3" style={{ color: 'var(--text-tertiary)' }}>
-              <span
-                className="px-2 py-0.5 rounded-full font-medium"
-                style={{ backgroundColor: `${STATUS_COLORS[q.status]}20`, color: STATUS_COLORS[q.status] }}
-              >
-                {STATUS_LABELS[q.status] || q.status}
-              </span>
-              <span>{q.totalPerguntas} {q.totalPerguntas === 1 ? 'pergunta' : 'perguntas'}</span>
-              <span>{q.totalRespostas} {q.totalRespostas === 1 ? 'resposta' : 'respostas'}</span>
-              {q.anonimo && <span>Anônimo</span>}
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Link
-                href={`/questionarios/${q.id}`}
-                className="btn-secondary"
-                style={{ textDecoration: 'none' }}
-              >
-                Ver
-              </Link>
+      {loading ? (
+        <QuestionarioListaSkeleton />
+      ) : (
+        <>
+          {carregandoPagina && <ProgressBar />}
 
-              {q.status === 'rascunho' && (
-                <>
+          {questionarios.length === 0 && (
+            <div className="text-center py-12">
+              <p className="mb-4" style={{ color: 'var(--text-tertiary)' }}>
+                {busca || statusFiltro !== 'todos' ? 'Nenhum questionário encontrado com esses filtros.' : 'Você ainda não criou nenhum questionário.'}
+              </p>
+              {!busca && statusFiltro === 'todos' && (
+                <Link
+                  href="/questionarios/novo"
+                  className="btn-primary"
+                >
+                  Criar primeiro questionário
+                </Link>
+              )}
+            </div>
+          )}
+
+          <div key={pagina} className="flex flex-col gap-4 animate-in">
+            {questionarios.map((q) => (
+              <div
+                key={q.id}
+                className="rounded-lg p-5 transition-colors"
+                style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
+              >
+                <Link
+                  href={`/questionarios/${q.id}`}
+                  className="block mb-3"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <BannerQuestionario cor={q.corTema} compacto className="mb-3" />
+                  <h2 className="font-medium text-lg mb-1" style={{ color: 'var(--text-primary)' }}>{q.titulo}</h2>
+                  {q.descricao && (
+                    <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{q.descricao}</p>
+                  )}
+                </Link>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs mb-3" style={{ color: 'var(--text-tertiary)' }}>
+                  <span
+                    className="px-2 py-0.5 rounded-full font-medium"
+                    style={{ backgroundColor: `${STATUS_COLORS[q.status]}20`, color: STATUS_COLORS[q.status] }}
+                  >
+                    {STATUS_LABELS[q.status] || q.status}
+                  </span>
+                  <span>{q.totalPerguntas} {q.totalPerguntas === 1 ? 'pergunta' : 'perguntas'}</span>
+                  <span>{q.totalRespostas} {q.totalRespostas === 1 ? 'resposta' : 'respostas'}</span>
+                  {q.anonimo && <span>Anônimo</span>}
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
                   <Link
-                    href={`/questionarios/${q.id}/editar`}
+                    href={`/questionarios/${q.id}`}
                     className="btn-secondary"
                     style={{ textDecoration: 'none' }}
                   >
-                    Editar
+                    Ver
                   </Link>
+
+                  {q.status === 'rascunho' && (
+                    <>
+                      <Link
+                        href={`/questionarios/${q.id}/editar`}
+                        className="btn-secondary"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        onClick={() => handlePublicar(q.id)}
+                        disabled={actionLoading === q.id}
+                        className="btn-success"
+                      >
+                        Publicar
+                      </button>
+                    </>
+                  )}
+
+                  {q.status === 'publicado' && (
+                    <button
+                      onClick={() => handleAction(q.id, () => encerrarQuestionario(q.id))}
+                      disabled={actionLoading === q.id}
+                      className="btn-warning"
+                    >
+                      Encerrar
+                    </button>
+                  )}
+
+                  {q.status !== 'rascunho' && q.totalRespostas === 0 && (
+                    <button
+                      onClick={() => handleDeletar(q.id, q.titulo)}
+                      disabled={actionLoading === q.id}
+                      className="btn-danger"
+                    >
+                      Deletar
+                    </button>
+                  )}
+
                   <button
-                    onClick={() => handlePublicar(q.id)}
+                    onClick={() => handleAction(q.id, () => duplicarQuestionario(q.id))}
                     disabled={actionLoading === q.id}
-                    className="btn-success"
+                    className="btn-ghost"
                   >
-                    Publicar
+                    Duplicar
                   </button>
-                </>
-              )}
-
-              {q.status === 'publicado' && (
-                <button
-                  onClick={() => handleAction(q.id, () => encerrarQuestionario(q.id))}
-                  disabled={actionLoading === q.id}
-                  className="btn-warning"
-                >
-                  Encerrar
-                </button>
-              )}
-
-              {q.status !== 'rascunho' && q.totalRespostas === 0 && (
-                <button
-                  onClick={() => handleDeletar(q.id, q.titulo)}
-                  disabled={actionLoading === q.id}
-                  className="btn-danger"
-                >
-                  Deletar
-                </button>
-              )}
-
-              <button
-                onClick={() => handleAction(q.id, () => duplicarQuestionario(q.id))}
-                disabled={actionLoading === q.id}
-                className="btn-ghost"
-              >
-                Duplicar
-              </button>
-            </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
 
       {/* Paginação */}
-      {totalPaginas > 1 && (
-        <div className="flex items-center justify-center gap-1.5 mt-6">
-          <button
-            onClick={() => { setPagina(p => p - 1); setLoading(true); carregar(pagina - 1, busca, statusFiltro) }}
-            disabled={pagina === 1}
-            className="btn-secondary"
-          >
-            ← Anterior
-          </button>
-          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => { setPagina(p); setLoading(true); carregar(p, busca, statusFiltro) }}
-              className={`btn ${p === pagina ? 'btn-primary' : 'btn-ghost'}`}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            onClick={() => { setPagina(p => p + 1); setLoading(true); carregar(pagina + 1, busca, statusFiltro) }}
-            disabled={pagina === totalPaginas}
-            className="btn-secondary"
-          >
-            Próxima →
-          </button>
-        </div>
+      {!loading && totalPaginas > 1 && (
+        <Paginacao
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          onChange={(p) => {
+            handlePagina(p)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }}
+        />
       )}
     </div>
   )
 }
-

@@ -5,6 +5,7 @@ import { useUsuario } from '@/lib/useData'
 import { useState, useEffect } from 'react'
 import { obterQuestionario, obterRespostaDoUsuario } from '../questionarios.actions'
 import FormResposta from '../components/FormResposta'
+import { QuestionarioDetalheSkeleton } from '@/components/Skeletons'
 
 interface Pergunta {
   id: number
@@ -68,7 +69,7 @@ export default function EditarResponderPage({ questionarioId }: Props) {
   }, [questionarioId, usuario, loadingUsuario, router])
 
   if (loading || loadingUsuario) {
-    return <p style={{ color: 'var(--text-tertiary)' }}>Carregando...</p>
+    return <QuestionarioDetalheSkeleton />
   }
 
   if (!questionario) {

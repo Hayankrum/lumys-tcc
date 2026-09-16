@@ -5,6 +5,7 @@ import { useUsuario } from '@/lib/useData'
 import { useState, useEffect } from 'react'
 import { obterQuestionarioParaEdicao } from '../questionarios.actions'
 import FormQuestionario from '../components/FormQuestionario'
+import { FormSkeleton } from '@/components/Skeletons'
 
 interface PerguntaExistente {
   id: number
@@ -61,7 +62,7 @@ export default function QuestionarioFormPage({ questionarioId }: Props) {
   }, [questionarioId, usuario, loadingUsuario, router])
 
   if (loadingUsuario || (isEdicao && carregandoEdicao)) {
-    return <p style={{ color: 'var(--text-tertiary)' }}>Carregando...</p>
+    return <FormSkeleton />
   }
 
   if (isEdicao && !questionario) {

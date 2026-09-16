@@ -6,6 +6,7 @@ import { useUsuario } from '@/lib/useData'
 import { useState, useEffect } from 'react'
 import { obterQuestionario, podeResponder, publicarQuestionario, encerrarQuestionario, deletarQuestionario, duplicarQuestionario } from '../questionarios.actions'
 import BannerQuestionario from '../components/BannerQuestionario'
+import { QuestionarioDetalheSkeleton } from '@/components/Skeletons'
 
 interface Opcao {
   id: number
@@ -159,7 +160,7 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
   }
 
   if (loading) {
-    return <p style={{ color: 'var(--text-tertiary)' }}>Carregando...</p>
+    return <QuestionarioDetalheSkeleton />
   }
 
   if (!questionario) {

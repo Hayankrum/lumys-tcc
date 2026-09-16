@@ -1,11 +1,16 @@
+import { Skeleton } from '@/components/Skeletons'
+
 export default function Loading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
-      <div
-        className="w-10 h-10 border-4 rounded-full animate-spin"
-        style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--text-primary)' }}
-      />
-      <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>Carregando...</p>
+    <div role="status" aria-label="Carregando..." className="flex flex-col gap-4">
+      <span className="sr-only">Carregando...</span>
+      <Skeleton className="h-8 w-2/3" />
+      <Skeleton className="h-4 w-1/3" />
+      <div className="flex flex-col gap-4 mt-4">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-24 w-full" />
+        ))}
+      </div>
     </div>
   )
 }

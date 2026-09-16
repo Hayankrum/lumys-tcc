@@ -9,6 +9,7 @@ import FormResposta from '../components/FormResposta'
 import BannerQuestionario from '../components/BannerQuestionario'
 import { getCachedQuestionario, cacheQuestionario, type CachedQuestionario } from '@/lib/db'
 import { useOnlineStatus } from '@/lib/useOnlineStatus'
+import { QuestionarioDetalheSkeleton } from '@/components/Skeletons'
 
 interface Pergunta {
   id: number
@@ -89,7 +90,7 @@ export default function ResponderPage({ questionarioId }: Props) {
   }, [questionarioId, usuario, loadingUsuario, router, isOnline])
 
   if (loading || loadingUsuario) {
-    return <p style={{ color: 'var(--text-tertiary)' }}>Carregando...</p>
+    return <QuestionarioDetalheSkeleton />
   }
 
   if (!questionario) {

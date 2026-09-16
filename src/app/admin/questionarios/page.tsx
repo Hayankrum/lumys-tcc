@@ -2,10 +2,13 @@ import { obterSessao } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import Paginacao from '@/components/Paginacao'
 
 export const metadata = {
   title: 'Questionários - Admin',
 }
+
+const POR_PAGINA = 10
 
 function formatarData(data: Date) {
   return data.toLocaleDateString('pt-BR', {
@@ -15,21 +18,36 @@ function formatarData(data: Date) {
   })
 }
 
-export default async function AdminQuestionariosPage() {
+export default async function AdminQuestionariosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
   const usuario = await obterSessao()
   if (!usuario || !usuario.isAdmin) redirect('/')
 
-  const questionarios = await prisma.questionario.findMany({
-    select: {
-      id: true,
-      titulo: true,
-      status: true,
-      criadoEm: true,
-      autor: { select: { nome: true } },
-      _count: { select: { respostas: true, perguntas: true } },
-    },
-    orderBy: { criadoEm: 'desc' },
-  })
+  const params = await searchParams
+  const pagina = Math.max(1, parseInt(params.page ?? '1', 10) || 1)
+
+  const [questionarios, total] = await Promise.all([
+    prisma.questionario.findMany({
+      select: {
+        id: true,
+        titulo: true,
+        status: true,
+        criadoEm: true,
+        autor: { select: { nome: true } },
+        _count: { select: { respostas: true, perguntas: true } },
+      },
+      orderBy: { criadoEm: 'desc' },
+      skip: (pagina - 1) * POR_PAGINA,
+      take: POR_PAGINA,
+    }),
+    prisma.questionario.count(),
+  ])
+
+  const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA))
+  const paginaAtual = Math.min(pagina, totalPaginas)
 
   const statusLabels: Record<string, string> = {
     rascunho: 'Rascunho',
@@ -61,7 +79,7 @@ export default async function AdminQuestionariosPage() {
             Questionários
           </h1>
           <p className="text-xs sm:text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {questionarios.length} questionários cadastrados
+            {total} questionários cadastrados
           </p>
         </div>
 
@@ -126,6 +144,14 @@ export default async function AdminQuestionariosPage() {
             </tbody>
           </table>
         </div>
+
+        {totalPaginas > 1 && (
+          <Paginacao
+            pagina={paginaAtual}
+            totalPaginas={totalPaginas}
+            buildHref={(p) => `/admin/questionarios?page=${p}`}
+          />
+        )}
       </div>
     </div>
   )

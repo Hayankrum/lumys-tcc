@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePushSubscription } from '@/lib/usePushSubscription'
 import { toggleNotificacoes } from '@/modules/usuarios/usuarios.actions'
+import { ListaSkeleton } from '@/components/Skeletons'
 
 interface NotificacaoHistorico {
   id: number
@@ -117,7 +118,7 @@ export default function NotificacoesPage() {
     return (
       <div>
         <h1 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Notificações</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Carregando...</p>
+        <ListaSkeleton itens={4} />
       </div>
     )
   }
@@ -217,7 +218,7 @@ export default function NotificacoesPage() {
         </div>
 
         {loadingHistorico ? (
-          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Carregando...</p>
+          <ListaSkeleton itens={4} altura="h-20" />
         ) : historico.length === 0 ? (
           <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-2 opacity-30" style={{ color: 'var(--text-tertiary)' }}>

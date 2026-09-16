@@ -349,6 +349,16 @@ html.dark .prose a { color: #D5E5DB; }
   animation: fadeInUp 0.3s ease-out;
 }
 
+/* Barra de progresso indeterminada (paginação/carregamentos) */
+@keyframes slideLinear {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.animate-slide-linear {
+  animation: slideLinear 1.2s ease-in-out infinite;
+}
+
 /* Range slider */
 input[type="range"] {
   -webkit-appearance: none;

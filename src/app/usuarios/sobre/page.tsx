@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
 import InstallPWAButton from '@/components/InstallPWAButton'
+import TermosModal from '@/components/TermosModal'
 
 function ShareSection() {
   const [shareData, setShareData] = useState({ url: '', qrSvg: '' })
@@ -107,6 +108,7 @@ interface UserInfo {
 
 export default function SobrePage() {
   const [user, setUser] = useState<UserInfo | null>(null)
+  const [termosAbertos, setTermosAbertos] = useState(false)
 
   useEffect(() => {
     fetch('/api/me')
@@ -212,8 +214,24 @@ export default function SobrePage() {
           </div>
         </section>
 
+        <section className="rounded-lg p-5" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+          <h2 className="font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Termos de Uso e Compromisso</h2>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+            Consulte a qualquer momento os termos, o compromisso e as regras de uso da plataforma.
+          </p>
+          <button
+            onClick={() => setTermosAbertos(true)}
+            className="w-full font-medium rounded-lg px-6 py-3 text-sm transition-colors min-h-[44px]"
+            style={{ backgroundColor: 'var(--btn-secondary-bg)', color: 'var(--text-primary)' }}
+          >
+            Ver Termos de Uso e Compromisso
+          </button>
+        </section>
+
         <ShareSection />
       </div>
+
+      <TermosModal isOpen={termosAbertos} onClose={() => setTermosAbertos(false)} readonly />
     </div>
   )
 }

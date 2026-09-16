@@ -9,6 +9,7 @@ import { useTheme } from '@/lib/ThemeProvider'
 import BotaoDeletarPerfil from '@/modules/usuarios/components/BotaoDeletarPerfil'
 import BotaoLogout from '@/modules/usuarios/components/BotaoLogout'
 import InstallPWAButton from '@/components/InstallPWAButton'
+import { ConfigSkeleton } from '@/components/Skeletons'
 
 interface UserInfo {
   id: number
@@ -126,7 +127,7 @@ export default function ConfiguracoesPage() {
     return (
       <div>
         <h1 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Configurações</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Carregando...</p>
+        <ConfigSkeleton />
       </div>
     )
   }

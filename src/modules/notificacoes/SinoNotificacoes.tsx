@@ -57,7 +57,7 @@ export default function SinoNotificacoes({ showLink = true, activeColor }: { sho
         <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
       </svg>
       {count > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-black text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+        <span className="absolute -top-1.5 -right-1.5 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
           {count > 99 ? '99+' : count}
         </span>
       )}

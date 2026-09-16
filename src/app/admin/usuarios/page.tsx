@@ -2,10 +2,13 @@ import { obterSessao } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import Paginacao from '@/components/Paginacao'
 
 export const metadata = {
   title: 'Gerenciar Usuários - Admin',
 }
+
+const POR_PAGINA = 10
 
 function formatarData(data: Date) {
   return data.toLocaleDateString('pt-BR', {
@@ -15,22 +18,37 @@ function formatarData(data: Date) {
   })
 }
 
-export default async function AdminUsuariosPage() {
+export default async function AdminUsuariosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
   const usuario = await obterSessao()
   if (!usuario || !usuario.isAdmin) redirect('/')
 
-  const usuarios = await prisma.usuario.findMany({
-    select: {
-      id: true,
+  const params = await searchParams
+  const pagina = Math.max(1, parseInt(params.page ?? '1', 10) || 1)
+
+  const [usuarios, total] = await Promise.all([
+    prisma.usuario.findMany({
+      select: {
+        id: true,
         nome: true,
         email: true,
         tipoUsuario: true,
         isAdmin: true,
-      criadoEm: true,
-      _count: { select: { questionarios: true, respostasQuestionario: true } },
-    },
-    orderBy: { criadoEm: 'desc' },
-  })
+        criadoEm: true,
+        _count: { select: { questionarios: true, respostasQuestionario: true } },
+      },
+      orderBy: { criadoEm: 'desc' },
+      skip: (pagina - 1) * POR_PAGINA,
+      take: POR_PAGINA,
+    }),
+    prisma.usuario.count(),
+  ])
+
+  const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA))
+  const paginaAtual = Math.min(pagina, totalPaginas)
 
   const tipoLabels: Record<string, string> = {
     discente: 'Discente',
@@ -55,7 +73,7 @@ export default async function AdminUsuariosPage() {
             Usuários
           </h1>
           <p className="text-xs sm:text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {usuarios.length} usuários cadastrados
+            {total} usuários cadastrados
           </p>
         </div>
 
@@ -132,6 +150,14 @@ export default async function AdminUsuariosPage() {
             </tbody>
           </table>
         </div>
+
+        {totalPaginas > 1 && (
+          <Paginacao
+            pagina={paginaAtual}
+            totalPaginas={totalPaginas}
+            buildHref={(p) => `/admin/usuarios?page=${p}`}
+          />
+        )}
       </div>
     </div>
   )

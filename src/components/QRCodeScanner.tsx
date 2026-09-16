@@ -135,8 +135,8 @@ export default function QRCodeScanner({ onResult, onError }: QRCodeScannerProps)
             disabled={!hasCamera}
             className="flex-1 rounded-lg px-6 py-3 text-sm font-medium transition-colors min-h-[44px] flex items-center justify-center gap-2"
             style={{ 
-              backgroundColor: hasCamera ? '#ffcf00' : 'var(--btn-secondary-bg)', 
-              color: hasCamera ? '#000' : 'var(--text-secondary)' 
+              backgroundColor: hasCamera ? 'var(--btn-primary-bg)' : 'var(--btn-secondary-bg)', 
+              color: hasCamera ? 'var(--btn-primary-text)' : 'var(--text-secondary)' 
             }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

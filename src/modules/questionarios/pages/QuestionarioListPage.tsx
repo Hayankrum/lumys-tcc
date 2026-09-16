@@ -1,9 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { listarQuestionariosPublicos } from '../questionarios.actions'
 import BannerQuestionario from '../components/BannerQuestionario'
+import Paginacao from '@/components/Paginacao'
+import ProgressBar from '@/components/ProgressBar'
+import { QuestionarioListaSkeleton } from '@/components/Skeletons'
 
 interface Questionario {
   id: number
@@ -32,57 +35,79 @@ const STATUS_COLORS: Record<string, string> = {
 export default function QuestionarioListPage() {
   const [questionarios, setQuestionarios] = useState<Questionario[]>([])
   const [loading, setLoading] = useState(true)
+  const [carregandoPagina, setCarregandoPagina] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
   const [statusFiltro, setStatusFiltro] = useState('todos')
   const [pagina, setPagina] = useState(1)
   const [totalPaginas, setTotalPaginas] = useState(1)
+  const seqRef = useRef(0)
 
   const carregar = useCallback(async (p: number, buscaVal: string, statusVal: string) => {
-    const result = await listarQuestionariosPublicos({
-      busca: buscaVal || undefined,
-      status: statusVal !== 'todos' ? statusVal : undefined,
-      pagina: p,
-      porPagina: 10,
-    })
-    if ('questionarios' in result) {
-      setQuestionarios(result.questionarios as unknown as Questionario[])
-      setTotalPaginas(result.paginas as number)
-    }
-    setLoading(false)
-  }, [])
+    const seq = ++seqRef.current
+    setCarregandoPagina(true)
 
-  useEffect(() => {
-    let cancelled = false
-    listarQuestionariosPublicos({ pagina: 1, porPagina: 10 }).then((result) => {
-      if (cancelled) return
+    try {
+      const result = await listarQuestionariosPublicos({
+        busca: buscaVal || undefined,
+        status: statusVal !== 'todos' ? statusVal : undefined,
+        pagina: p,
+        porPagina: 10,
+      })
+      if (seq !== seqRef.current) return
       if ('questionarios' in result) {
         setQuestionarios(result.questionarios as unknown as Questionario[])
         setTotalPaginas(result.paginas as number)
       }
-      setLoading(false)
-    })
+    } catch {
+      if (seq === seqRef.current) setErro('Erro ao carregar questionários. Tente novamente.')
+    } finally {
+      if (seq === seqRef.current) {
+        setLoading(false)
+        setCarregandoPagina(false)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    listarQuestionariosPublicos({ pagina: 1, porPagina: 10 })
+      .then((result) => {
+        if (!active) return
+        if ('questionarios' in result) {
+          setQuestionarios(result.questionarios as unknown as Questionario[])
+          setTotalPaginas(result.paginas as number)
+        }
+      })
+      .catch(() => {
+        if (active) setErro('Erro ao carregar questionários. Tente novamente.')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
     return () => {
-      cancelled = true
+      active = false
     }
   }, [])
 
   function handleBuscar(e: React.FormEvent) {
     e.preventDefault()
+    setErro(null)
     setPagina(1)
-    setLoading(true)
     carregar(1, busca, statusFiltro)
   }
 
   function handleFiltrarStatus(status: string) {
     setStatusFiltro(status)
+    setErro(null)
     setPagina(1)
-    setLoading(true)
     carregar(1, busca, status)
   }
 
   function handlePagina(p: number) {
+    if (p === pagina) return
+    setErro(null)
     setPagina(p)
-    setLoading(true)
     carregar(p, busca, statusFiltro)
   }
 
@@ -146,78 +171,65 @@ export default function QuestionarioListPage() {
         </div>
       </div>
 
-      {loading && (
-        <p style={{ color: 'var(--text-tertiary)' }}>Carregando...</p>
+      {erro && (
+        <div className="alert-error mb-4" role="alert">
+          {erro}
+        </div>
       )}
 
-      {!loading && questionarios.length === 0 && (
-        <p style={{ color: 'var(--text-tertiary)' }}>
-          {busca || statusFiltro !== 'todos' ? 'Nenhum questionário encontrado com esses filtros.' : 'Nenhum questionário publicado ainda.'}
-        </p>
-      )}
+      {loading ? (
+        <QuestionarioListaSkeleton />
+      ) : (
+        <>
+          {carregandoPagina && <ProgressBar />}
 
-      <div className="flex flex-col gap-4">
-        {questionarios.map((q) => (
-          <Link
-            key={q.id}
-            href={`/questionarios/${q.id}`}
-            className="rounded-lg p-5 block transition-colors hover:opacity-90"
-            style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', textDecoration: 'none' }}
-          >
-            <BannerQuestionario cor={q.corTema} compacto className="mb-3" />
-            <h2 className="font-medium text-lg mb-1" style={{ color: 'var(--text-primary)' }}>{q.titulo}</h2>
-            <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>por {q.autor.nome}</p>
-            {q.descricao && (
-              <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{q.descricao}</p>
-            )}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              <span
-                className="px-2 py-0.5 rounded-full font-medium"
-                style={{ backgroundColor: `${STATUS_COLORS[q.status]}20`, color: STATUS_COLORS[q.status] }}
+          {questionarios.length === 0 && (
+            <p style={{ color: 'var(--text-tertiary)' }}>
+              {busca || statusFiltro !== 'todos' ? 'Nenhum questionário encontrado com esses filtros.' : 'Nenhum questionário publicado ainda.'}
+            </p>
+          )}
+
+          <div key={pagina} className="flex flex-col gap-4 animate-in">
+            {questionarios.map((q) => (
+              <Link
+                key={q.id}
+                href={`/questionarios/${q.id}`}
+                className="rounded-lg p-5 block transition-colors hover:opacity-90"
+                style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', textDecoration: 'none' }}
               >
-                {STATUS_LABELS[q.status] || q.status}
-              </span>
-              <span>{q.totalPerguntas} {q.totalPerguntas === 1 ? 'pergunta' : 'perguntas'}</span>
-              <span>{q.totalRespostas} {q.totalRespostas === 1 ? 'resposta' : 'respostas'}</span>
-              {q.anonimo && <span>Anônimo</span>}
-            </div>
-          </Link>
-        ))}
-      </div>
+                <BannerQuestionario cor={q.corTema} compacto className="mb-3" />
+                <h2 className="font-medium text-lg mb-1" style={{ color: 'var(--text-primary)' }}>{q.titulo}</h2>
+                <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>por {q.autor.nome}</p>
+                {q.descricao && (
+                  <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{q.descricao}</p>
+                )}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  <span
+                    className="px-2 py-0.5 rounded-full font-medium"
+                    style={{ backgroundColor: `${STATUS_COLORS[q.status]}20`, color: STATUS_COLORS[q.status] }}
+                  >
+                    {STATUS_LABELS[q.status] || q.status}
+                  </span>
+                  <span>{q.totalPerguntas} {q.totalPerguntas === 1 ? 'pergunta' : 'perguntas'}</span>
+                  <span>{q.totalRespostas} {q.totalRespostas === 1 ? 'resposta' : 'respostas'}</span>
+                  {q.anonimo && <span>Anônimo</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Paginação */}
-      {totalPaginas > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <button
-            onClick={() => handlePagina(pagina - 1)}
-            disabled={pagina === 1}
-            className="text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
-            style={{ backgroundColor: 'var(--btn-secondary-bg)', color: 'var(--text-primary)' }}
-          >
-            ← Anterior
-          </button>
-          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => handlePagina(p)}
-              className="text-sm w-8 h-8 rounded-lg transition-colors"
-              style={{
-                backgroundColor: p === pagina ? 'var(--btn-primary-bg)' : 'transparent',
-                color: p === pagina ? 'var(--btn-primary-text)' : 'var(--text-tertiary)',
-              }}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            onClick={() => handlePagina(pagina + 1)}
-            disabled={pagina === totalPaginas}
-            className="text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
-            style={{ backgroundColor: 'var(--btn-secondary-bg)', color: 'var(--text-primary)' }}
-          >
-            Próxima →
-          </button>
-        </div>
+      {!loading && totalPaginas > 1 && (
+        <Paginacao
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          onChange={(p) => {
+            handlePagina(p)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }}
+        />
       )}
     </div>
   )
