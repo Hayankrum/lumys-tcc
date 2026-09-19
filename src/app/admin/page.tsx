@@ -19,10 +19,11 @@ export default async function AdminPage() {
   const usuario = await obterSessao()
   if (!usuario || !usuario.isAdmin) redirect('/')
 
-  const [totalUsuarios, totalQuestionarios, totalRespostas, ultimosUsuarios, ultimosQuestionarios] = await Promise.all([
+  const [totalUsuarios, totalQuestionarios, totalRespostas, totalDenuncias, ultimosUsuarios, ultimosQuestionarios] = await Promise.all([
     prisma.usuario.count(),
     prisma.questionario.count(),
     prisma.resposta.count(),
+    prisma.questionario.count({ where: { denuncias: { some: {} } } }),
     prisma.usuario.findMany({
       select: { id: true, nome: true, email: true, criadoEm: true },
       orderBy: { criadoEm: 'desc' },
@@ -68,6 +69,7 @@ export default async function AdminPage() {
             { label: 'Usuários', value: totalUsuarios, href: '/admin/usuarios' },
             { label: 'Questionários', value: totalQuestionarios, href: '/admin/questionarios' },
             { label: 'Respostas', value: totalRespostas, href: '/admin/questionarios' },
+            { label: 'Denúncias', value: totalDenuncias, href: '/admin/denuncias' },
           ].map((item) => (
             <Link
               key={item.label}

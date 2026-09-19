@@ -27,6 +27,7 @@ model Usuario {
   medias               Media[]
   questionarios        Questionario[]
   respostasQuestionario Resposta[]
+  denuncias            Denuncia[]
 }
 
 model Sessao {
@@ -92,9 +93,24 @@ model Questionario {
   autor        Usuario     @relation(fields: [autorId], references: [id], onDelete: Cascade)
   perguntas    Pergunta[]
   respostas    Resposta[]
+  denuncias    Denuncia[]
 
   @@index([autorId])
   @@index([status])
+}
+
+model Denuncia {
+  id             Int          @id @default(autoincrement())
+  motivo         String
+  detalhes       String?
+  criadaEm       DateTime     @default(now())
+  questionarioId Int
+  questionario   Questionario @relation(fields: [questionarioId], references: [id], onDelete: Cascade)
+  denuncianteId  Int?
+  denunciante    Usuario?     @relation(fields: [denuncianteId], references: [id], onDelete: SetNull)
+
+  @@unique([questionarioId, denuncianteId])
+  @@index([questionarioId])
 }
 
 model Pergunta {

@@ -149,7 +149,7 @@ export default async function AdminQuestionariosPage({
           <Paginacao
             pagina={paginaAtual}
             totalPaginas={totalPaginas}
-            buildHref={(p) => `/admin/questionarios?page=${p}`}
+            baseUrl="/admin/questionarios?page="
           />
         )}
       </div>

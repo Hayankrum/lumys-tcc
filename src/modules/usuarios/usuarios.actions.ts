@@ -220,6 +220,29 @@ export async function sairAdmin(codigo: string) {
   return { success: 'Modo admin desativado' }
 }
 
+export async function deletarUsuarioAdmin(id: number, senha: string) {
+  const usuarioLogado = await obterSessao()
+  if (!usuarioLogado || !usuarioLogado.isAdmin) return { error: 'Não autorizado' }
+  if (usuarioLogado.id === id) return { error: 'Você não pode deletar sua própria conta' }
+
+  const admin = await prisma.usuario.findUnique({ where: { id: usuarioLogado.id } })
+  if (!admin) return { error: 'Não autorizado' }
+
+  if (!isContaGoogle(admin)) {
+    const senhaCorreta = await bcrypt.compare(senha, admin.senha)
+    if (!senhaCorreta) return { error: 'Senha incorreta' }
+  }
+
+  const usuario = await prisma.usuario.findUnique({ where: { id } })
+  if (!usuario) return { error: 'Usuário não encontrado' }
+
+  await prisma.usuario.delete({ where: { id } })
+
+  revalidatePath('/admin/usuarios')
+  revalidatePath('/admin')
+  return { success: true }
+}
+
 // ---------- HELPERS ----------
 
 export async function getUsuarioLogado() {

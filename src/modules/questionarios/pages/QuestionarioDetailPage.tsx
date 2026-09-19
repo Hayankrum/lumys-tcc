@@ -6,6 +6,7 @@ import { useUsuario } from '@/lib/useData'
 import { useState, useEffect } from 'react'
 import { obterQuestionario, podeResponder, publicarQuestionario, encerrarQuestionario, deletarQuestionario, duplicarQuestionario } from '../questionarios.actions'
 import BannerQuestionario from '../components/BannerQuestionario'
+import BotaoDenunciar from '../components/BotaoDenunciar'
 import { QuestionarioDetalheSkeleton } from '@/components/Skeletons'
 
 interface Opcao {
@@ -316,6 +317,9 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
         >
           Ver resultados
         </Link>
+        {!isAutor && (
+          <BotaoDenunciar questionarioId={questionario.id} autorId={questionario.autor.id} status={questionario.status} />
+        )}
       </div>
 
       {podeResp.jaRespondeu && !isAutor && (

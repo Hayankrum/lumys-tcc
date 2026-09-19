@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Paginacao from '@/components/Paginacao'
+import DeletarUsuario from './DeletarUsuario'
 
 export const metadata = {
   title: 'Gerenciar Usuários - Admin',
@@ -87,6 +88,7 @@ export default async function AdminUsuariosPage({
                 <th className="py-3 px-3 text-xs font-semibold hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>Respostas</th>
                 <th className="py-3 px-3 text-xs font-semibold hidden lg:table-cell" style={{ color: 'var(--text-secondary)' }}>Cadastro</th>
                 <th className="py-3 px-3 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Admin</th>
+                <th className="py-3 px-3 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -145,6 +147,9 @@ export default async function AdminUsuariosPage({
                       </span>
                     )}
                   </td>
+                  <td className="py-3 px-3">
+                    <DeletarUsuario usuarioId={u.id} nome={u.nome} email={u.email} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -155,7 +160,7 @@ export default async function AdminUsuariosPage({
           <Paginacao
             pagina={paginaAtual}
             totalPaginas={totalPaginas}
-            buildHref={(p) => `/admin/usuarios?page=${p}`}
+            baseUrl="/admin/usuarios?page="
           />
         )}
       </div>

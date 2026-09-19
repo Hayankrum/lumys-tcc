@@ -28,13 +28,13 @@ interface PaginacaoProps {
   pagina: number
   totalPaginas: number
   onChange?: (pagina: number) => void
-  buildHref?: (pagina: number) => string
+  baseUrl?: string
 }
 
 const numeroClasse = 'flex items-center justify-center text-sm w-8 h-8 rounded-lg transition-colors shrink-0'
 const setaClasse = 'flex items-center justify-center text-sm px-3 py-1.5 rounded-lg transition-colors shrink-0'
 
-export default function Paginacao({ pagina, totalPaginas, onChange, buildHref }: PaginacaoProps) {
+export default function Paginacao({ pagina, totalPaginas, onChange, baseUrl }: PaginacaoProps) {
   if (totalPaginas <= 1) return null
 
   const paginas = pegarPaginas(pagina, totalPaginas)
@@ -46,7 +46,7 @@ export default function Paginacao({ pagina, totalPaginas, onChange, buildHref }:
       backgroundColor: 'var(--btn-secondary-bg)',
       color: 'var(--text-primary)',
     }
-    if (buildHref) {
+    if (baseUrl) {
       if (!habilitada) {
         return (
           <span key={rotulo} className={`${setaClasse} opacity-40`} aria-hidden="true">
@@ -57,7 +57,7 @@ export default function Paginacao({ pagina, totalPaginas, onChange, buildHref }:
       return (
         <Link
           key={rotulo}
-          href={buildHref(destino)}
+          href={`${baseUrl}${destino}`}
           className={setaClasse}
           style={style}
           aria-label={rotulo}
@@ -96,11 +96,11 @@ export default function Paginacao({ pagina, totalPaginas, onChange, buildHref }:
       color: ativo ? 'var(--btn-primary-text)' : 'var(--text-tertiary)',
     }
 
-    if (buildHref) {
+    if (baseUrl) {
       return (
         <Link
           key={p}
-          href={buildHref(p)}
+          href={`${baseUrl}${p}`}
           className={numeroClasse}
           style={style}
           aria-current={ativo ? 'page' : undefined}
