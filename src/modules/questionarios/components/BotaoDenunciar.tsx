@@ -43,7 +43,7 @@ export default function BotaoDenunciar({ questionarioId, autorId, status }: Prop
       } else if (result?.removido) {
         setAberto(false)
         alert('Este questionário atingiu o limite de denúncias e foi removido.')
-        router.push('/questionarios')
+        router.push('/questionarios/meus')
         router.refresh()
       } else {
         setJaDenunciado(true)

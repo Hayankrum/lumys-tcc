@@ -18,14 +18,6 @@ const navItems = [
       <polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
   )},
-  { href: '/questionarios', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="14" y="14" width="7" height="7" rx="1"/>
-    </svg>
-  )},
   { href: '/questionarios/meus', icon: (
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
@@ -44,14 +36,14 @@ export default function MobileBottomNav({ usuario }: { usuario: Usuario | null }
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pb-3">
       <div
-        className="flex items-center justify-center gap-2 rounded-2xl px-4 py-2 backdrop-blur-xl"
+        className="flex w-fit mx-auto items-center gap-2 rounded-2xl px-3 py-2 backdrop-blur-xl"
         style={{
           backgroundColor: 'color-mix(in srgb, var(--bg-tertiary) 85%, transparent)',
           boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
         }}
       >
         {navItems.map(item => {
-          const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || (pathname.startsWith(item.href + '/') && item.href !== '/questionarios')
+          const isActive = item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(item.href + '/')
           return (
             <div key={item.href} className="relative">
               <Link

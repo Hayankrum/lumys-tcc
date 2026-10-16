@@ -172,7 +172,7 @@ export default function ResultadosPage({ questionarioId }: Props) {
           {erro}
         </div>
         <button
-          onClick={() => router.push('/questionarios')}
+          onClick={() => router.push('/questionarios/meus')}
           className="btn-secondary"
         >
           Voltar
@@ -186,7 +186,7 @@ export default function ResultadosPage({ questionarioId }: Props) {
       <div>
         <p className="text-sm mb-4" style={{ color: 'var(--text-tertiary)' }}>Resultado não encontrado.</p>
         <button
-          onClick={() => router.push('/questionarios')}
+          onClick={() => router.push('/questionarios/meus')}
           className="btn-secondary"
         >
           Voltar

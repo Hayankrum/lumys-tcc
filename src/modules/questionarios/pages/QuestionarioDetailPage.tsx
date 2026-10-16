@@ -30,6 +30,7 @@ interface QuestionarioData {
   id: number
   titulo: string
   descricao: string | null
+  codigoAcesso: string | null
   status: string
   anonimo: boolean
   resultadosVisiveis: boolean
@@ -75,6 +76,7 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
   const [processando, setProcessando] = useState(false)
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
+  const [codigoCopiado, setCodigoCopiado] = useState(false)
 
   const isAutor = usuario && questionario && usuario.id === questionario.autor.id
 
@@ -144,7 +146,7 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
       if (result?.error) {
         alert(result.error)
       } else if (action === 'deletar') {
-        router.push('/questionarios')
+        router.push('/questionarios/meus')
         router.refresh()
       } else {
         const [updated, podeRespAtualizado] = await Promise.all([
@@ -174,7 +176,7 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <Link
-        href="/questionarios"
+        href="/questionarios/meus"
         className="text-sm transition-colors mb-2 inline-block hover:underline"
         style={{ color: 'var(--text-tertiary)' }}
       >
@@ -276,6 +278,31 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
         style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
       >
         <p className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Compartilhar</p>
+
+        {questionario.codigoAcesso && (
+          <div
+            className="flex items-center justify-between gap-3 rounded-lg px-4 py-3 mb-4"
+            style={{ backgroundColor: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
+          >
+            <div>
+              <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Código de acesso</p>
+              <p className="text-xl font-semibold tracking-widest" style={{ color: 'var(--text-primary)' }}>
+                {questionario.codigoAcesso}
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                try { await navigator.clipboard.writeText(questionario.codigoAcesso!) } catch { /* ignore */ }
+                setCodigoCopiado(true)
+                setTimeout(() => setCodigoCopiado(false), 2000)
+              }}
+              className={codigoCopiado ? 'btn-success' : 'btn-secondary'}
+            >
+              {codigoCopiado ? 'Copiado!' : 'Copiar código'}
+            </button>
+          </div>
+        )}
+
         <div className="flex items-start gap-4">
           {qrCode ? (
             // eslint-disable-next-line @next/next/no-img-element

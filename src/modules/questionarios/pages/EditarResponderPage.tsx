@@ -60,7 +60,7 @@ export default function EditarResponderPage({ questionarioId }: Props) {
       if (qResult && 'questionario' in qResult && qResult.questionario) {
         setQuestionario(qResult.questionario as unknown as QuestionarioData)
       } else {
-        router.push('/questionarios')
+        router.push('/questionarios/meus')
         return
       }
       setResposta(rResult as RespostaData | null)

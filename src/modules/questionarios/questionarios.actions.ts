@@ -20,6 +20,28 @@ function sanitizeInput(value: string): string {
   return value.replace(/[<>]/g, '').trim()
 }
 
+const ALFABETO_CODIGO_ACESSO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+
+function gerarCodigoAcesso(): string {
+  let codigo = ''
+  for (let i = 0; i < 6; i++) {
+    codigo += ALFABETO_CODIGO_ACESSO[Math.floor(Math.random() * ALFABETO_CODIGO_ACESSO.length)]
+  }
+  return codigo
+}
+
+async function gerarCodigoAcessoUnico(): Promise<string> {
+  for (let tentativa = 0; tentativa < 5; tentativa++) {
+    const codigo = gerarCodigoAcesso()
+    const existente = await prisma.questionario.findUnique({
+      where: { codigoAcesso: codigo },
+      select: { id: true },
+    })
+    if (!existente) return codigo
+  }
+  throw new Error('Não foi possível gerar um código de acesso único')
+}
+
 interface OpcaoInput {
   id?: number
   texto: string
@@ -145,6 +167,7 @@ export async function criarQuestionario(
     data: {
       titulo: tituloClean,
       descricao: descricaoClean || null,
+      codigoAcesso: await gerarCodigoAcessoUnico(),
       encerraEm: encerraEm ?? null,
       anonimo: anonimo ?? true,
       resultadosVisiveis: resultadosVisiveis ?? true,
@@ -177,7 +200,7 @@ export async function criarQuestionario(
     },
   })
 
-  revalidatePath('/questionarios')
+  revalidatePath('/questionarios/meus')
   return { questionario }
 }
 
@@ -271,7 +294,7 @@ export async function editarQuestionario(
     }
   })
 
-  revalidatePath('/questionarios')
+  revalidatePath('/questionarios/meus')
   revalidatePath(`/questionarios/${id}`)
   redirect(`/questionarios/${id}`)
 }
@@ -281,7 +304,7 @@ export async function deletarQuestionario(id: number) {
   if (error) return { error }
 
   await prisma.questionario.delete({ where: { id } })
-  revalidatePath('/questionarios')
+  revalidatePath('/questionarios/meus')
 }
 
 export async function duplicarQuestionario(id: number) {
@@ -308,6 +331,7 @@ export async function duplicarQuestionario(id: number) {
       titulo: `${original.titulo} (Cópia)`,
       descricao: original.descricao,
       status: 'rascunho',
+      codigoAcesso: await gerarCodigoAcessoUnico(),
       autorId: usuario.id,
       perguntas: {
         create: original.perguntas.map((p) => ({
@@ -331,7 +355,7 @@ export async function duplicarQuestionario(id: number) {
     },
   })
 
-  revalidatePath('/questionarios')
+  revalidatePath('/questionarios/meus')
   return { questionario: novoQuestionario }
 }
 
@@ -347,10 +371,13 @@ export async function publicarQuestionario(id: number) {
 
   await prisma.questionario.update({
     where: { id },
-    data: { status: 'publicado' },
+    data: {
+      status: 'publicado',
+      codigoAcesso: questionario!.codigoAcesso ?? (await gerarCodigoAcessoUnico()),
+    },
   })
 
-  revalidatePath('/questionarios')
+  revalidatePath('/questionarios/meus')
   revalidatePath(`/questionarios/${id}`)
 }
 
@@ -367,7 +394,7 @@ export async function encerrarQuestionario(id: number) {
     data: { status: 'encerrado' },
   })
 
-  revalidatePath('/questionarios')
+  revalidatePath('/questionarios/meus')
   revalidatePath(`/questionarios/${id}`)
 }
 
@@ -1020,58 +1047,74 @@ export async function obterResultados(
   }
 }
 
-export async function listarQuestionariosPublicos(filtros?: {
+export async function buscarQuestionarioPorCodigo(codigo: string) {
+  const normalizado = (codigo || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+
+  if (normalizado.length < 4 || normalizado.length > 10) {
+    return { error: 'Código inválido' as const }
+  }
+
+  const questionario = await prisma.questionario.findFirst({
+    where: {
+      codigoAcesso: normalizado,
+      status: { in: ['publicado', 'encerrado'] },
+    },
+    select: { id: true, titulo: true, status: true },
+  })
+
+  if (!questionario) {
+    return { error: 'Questionário não encontrado. Verifique o código.' as const }
+  }
+
+  return { questionario }
+}
+
+export async function listarMinhasRespostas(filtros?: {
   busca?: string
-  status?: string
   pagina?: number
   porPagina?: number
 }) {
+  const usuario = await getUsuarioLogado()
+  if (!usuario) return { error: 'Você precisa estar logado' as const, respostas: [], total: 0, paginas: 1 }
+
   const pagina = filtros?.pagina || 1
   const porPagina = filtros?.porPagina || 10
   const skip = (pagina - 1) * porPagina
 
-  const where: Record<string, unknown> = {}
-
-  if (filtros?.status && filtros.status !== 'todos') {
-    where.status = filtros.status
-  } else {
-    where.status = { in: ['publicado', 'encerrado'] }
-  }
+  const where: Record<string, unknown> = { usuarioId: usuario.id }
 
   if (filtros?.busca && filtros.busca.trim()) {
-    where.OR = [
-      { titulo: { contains: filtros.busca, mode: 'insensitive' } },
-      { descricao: { contains: filtros.busca, mode: 'insensitive' } },
-    ]
+    where.questionario = {
+      titulo: { contains: filtros.busca, mode: 'insensitive' },
+    }
   }
 
-  const [questionarios, total] = await Promise.all([
-    prisma.questionario.findMany({
+  const [respostas, total] = await Promise.all([
+    prisma.resposta.findMany({
       where,
-      include: {
-        autor: { select: { id: true, nome: true } },
-        _count: { select: { perguntas: true, respostas: true } },
+      select: {
+        id: true,
+        nomeAnonimo: true,
+        criadoEm: true,
+        questionario: {
+          select: {
+            id: true,
+            titulo: true,
+            status: true,
+            corTema: true,
+            autor: { select: { nome: true } },
+          },
+        },
       },
       orderBy: { criadoEm: 'desc' },
       skip,
       take: porPagina,
     }),
-    prisma.questionario.count({ where }),
+    prisma.resposta.count({ where }),
   ])
 
   return {
-    questionarios: questionarios.map((q) => ({
-      id: q.id,
-      titulo: q.titulo,
-      descricao: q.descricao,
-      status: q.status,
-      anonimo: q.anonimo,
-      corTema: q.corTema,
-      criadoEm: q.criadoEm,
-      autor: q.autor,
-      totalPerguntas: q._count.perguntas,
-      totalRespostas: q._count.respostas,
-    })),
+    respostas,
     total,
     paginas: Math.ceil(total / porPagina),
     pagina,

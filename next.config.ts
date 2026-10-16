@@ -44,6 +44,15 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.tile.openstreetmap.org' },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/questionarios',
+        destination: '/questionarios/meus',
+        permanent: false,
+      },
+    ]
+  },
   headers: async () => [
     {
       source: '/(.*)',

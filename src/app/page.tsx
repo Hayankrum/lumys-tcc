@@ -3,6 +3,7 @@ import { getUsuarioLogado } from '@/modules/usuarios/usuarios.actions'
 import { primeiroNome } from '@/lib/utils'
 import HeroMinimal from '@/components/HeroMinimal'
 import HomeScanner from '@/components/HomeScanner'
+import BuscaCodigo from '@/components/BuscaCodigo'
 
 export default async function Home() {
   const usuario = await getUsuarioLogado()
@@ -25,6 +26,10 @@ export default async function Home() {
       <p className="leading-relaxed mb-8 max-w-md" style={{ color: 'var(--text-secondary)' }}>
         Crie, compartilhe e responda seus questionários em segundos.
       </p>
+
+      <div className="w-full max-w-md mb-6">
+        <BuscaCodigo />
+      </div>
 
       <div className="flex flex-col gap-4 w-full sm:w-auto">
         {!usuario && (

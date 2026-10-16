@@ -81,6 +81,7 @@ model Questionario {
   id           Int         @id @default(autoincrement())
   titulo       String
   descricao    String?
+  codigoAcesso String?     @unique
   status       String      @default("rascunho")
   anonimo      Boolean     @default(true)
   resultadosVisiveis Boolean @default(true)

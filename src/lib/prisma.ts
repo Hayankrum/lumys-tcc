@@ -6,6 +6,9 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 function createPrisma() {
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL!,
+    // Em redes onde IPv6 está quebrado (ex.: alguns ISPs), o driver acaba
+    // tentando IPv6 primeiro e falha com ECONNREFUSED. Sete DB_FORCE_IPV4=1.
+    ...(process.env.DB_FORCE_IPV4 === '1' ? { family: 4 as const } : {}),
   })
 
   return new PrismaClient({

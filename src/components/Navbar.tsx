@@ -12,12 +12,6 @@ interface Usuario {
 }
 
 const navItems = [
-  { href: '/questionarios', title: 'Questionários', icon: (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 11l3 3L22 4"/>
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-    </svg>
-  )},
   { href: '/questionarios/meus', title: 'Meus Questionários', icon: (
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -47,7 +41,7 @@ export default function Navbar({ usuario }: { usuario: Usuario | null }) {
         </Link>
 
         {navItems.map(item => {
-          const isActive = pathname === item.href || (pathname.startsWith(item.href + '/') && item.href !== '/questionarios')
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
             <Link
               key={item.href}

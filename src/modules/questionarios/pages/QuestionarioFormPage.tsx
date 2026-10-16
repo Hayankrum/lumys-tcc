@@ -52,7 +52,7 @@ export default function QuestionarioFormPage({ questionarioId }: Props) {
       if (result && 'questionario' in result && result.questionario) {
         setQuestionario(result.questionario as unknown as QuestionarioExistente)
       } else {
-        router.push('/questionarios')
+        router.push('/questionarios/meus')
       }
       setCarregandoEdicao(false)
     })

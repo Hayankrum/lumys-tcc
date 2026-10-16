@@ -67,7 +67,7 @@ export async function denunciarQuestionario(questionarioId: number, motivo: stri
       })
     }
 
-    revalidatePath('/questionarios')
+    revalidatePath('/questionarios/meus')
     revalidatePath('/admin')
     revalidatePath('/admin/denuncias')
     return { success: true, removido: true }
@@ -101,6 +101,6 @@ export async function deletarQuestionarioAdmin(id: number) {
   revalidatePath('/admin/denuncias')
   revalidatePath('/admin/questionarios')
   revalidatePath('/admin')
-  revalidatePath('/questionarios')
+  revalidatePath('/questionarios/meus')
   return { success: true }
 }
