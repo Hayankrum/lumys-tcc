@@ -6,6 +6,8 @@ import { enviarResposta, editarResposta } from '../questionarios.actions'
 import { useOnlineStatus } from '@/lib/useOnlineStatus'
 import { usePendingRespostas } from '@/lib/useData'
 
+const PERGUNTAS_POR_PAGINA = 10
+
 interface Opcao {
   id: number
   texto: string
@@ -72,9 +74,55 @@ export default function FormResposta({ questionario, anonimo, respostaExistente 
   const [enviando, setEnviando] = useState(false)
   const [enfileirado, setEnfileirado] = useState(false)
   const [nomeAnonimo, setNomeAnonimo] = useState('')
+  const [pagina, setPagina] = useState(0)
 
   const isEdicao = !!respostaExistente
   const jaEnfileirada = !isEdicao && pending.length > 0
+
+  const totalPerguntas = questionario.perguntas.length
+  const totalPaginas = Math.max(1, Math.ceil(totalPerguntas / PERGUNTAS_POR_PAGINA))
+  const inicio = pagina * PERGUNTAS_POR_PAGINA
+  const perguntasPagina = questionario.perguntas.slice(inicio, inicio + PERGUNTAS_POR_PAGINA)
+
+  function perguntaRespondida(pergunta: Pergunta): boolean {
+    const v = valores[pergunta.id]
+    if (!v) return false
+    switch (pergunta.tipo) {
+      case 'texto_curto':
+      case 'texto_longo':
+        return (v.texto || '').trim().length > 0
+      case 'escolha_unica':
+        return v.opcaoId != null
+      case 'multipla_escolha':
+        return (v.opcaoIds?.length || 0) > 0
+      case 'escala':
+        return v.valorNumerico != null
+      default:
+        return false
+    }
+  }
+
+  const respondidas = questionario.perguntas.filter(perguntaRespondida).length
+  const percentual = totalPerguntas > 0 ? Math.round((respondidas / totalPerguntas) * 100) : 0
+
+  function irParaPagina(nova: number) {
+    setPagina(Math.max(0, Math.min(nova, totalPaginas - 1)))
+    setErro(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function validarPaginaAtual(): boolean {
+    return perguntasPagina.every((p) => !p.obrigatoria || perguntaRespondida(p))
+  }
+
+  function avancar() {
+    if (!validarPaginaAtual()) {
+      setErro('Responda as perguntas obrigatórias (*) antes de avançar.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    irParaPagina(pagina + 1)
+  }
 
   function gerarSyncId() {
     if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -173,6 +221,7 @@ export default function FormResposta({ questionario, anonimo, respostaExistente 
       if (resultado?.error) {
         setErro(resultado.error)
         setEnviando(false)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         router.push(`/questionarios/${questionario.id}/resultados`)
         router.refresh()
@@ -180,6 +229,7 @@ export default function FormResposta({ questionario, anonimo, respostaExistente 
     } catch {
       setErro(isEdicao ? 'Erro ao editar resposta' : 'Erro ao enviar resposta')
       setEnviando(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -343,13 +393,25 @@ export default function FormResposta({ questionario, anonimo, respostaExistente 
         </div>
       )}
 
-      {questionario.descricao && (
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {questionario.descricao}
-        </p>
+      {totalPaginas > 1 && (
+        <div
+          className="rounded-lg p-3 flex flex-col gap-2"
+          style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
+        >
+          <div className="flex items-center justify-between gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span className="font-medium">Página {pagina + 1} de {totalPaginas}</span>
+            <span>{respondidas} de {totalPerguntas} respondidas ({percentual}%)</span>
+          </div>
+          <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--input-bg)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{ width: `${percentual}%`, backgroundColor: 'var(--btn-primary-bg)' }}
+            />
+          </div>
+        </div>
       )}
 
-      {anonimo && !isEdicao && (
+      {pagina === 0 && anonimo && !isEdicao && (
         <div className="rounded-lg p-4 flex flex-col gap-2" style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
           <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
             Como você gostaria de ser identificado? <span className="text-xs font-normal" style={{ color: 'var(--text-tertiary)' }}>(opcional)</span>
@@ -365,13 +427,16 @@ export default function FormResposta({ questionario, anonimo, respostaExistente 
         </div>
       )}
 
-      {questionario.perguntas.map((pergunta) => (
+      {perguntasPagina.map((pergunta, idx) => (
         <div
           key={pergunta.id}
           className="rounded-lg p-4 flex flex-col gap-3"
           style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
         >
           <div className="flex items-start gap-2">
+            <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
+              {inicio + idx + 1}.
+            </span>
             <p className="text-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>
               {pergunta.texto}
               {pergunta.obrigatoria && (
@@ -383,21 +448,40 @@ export default function FormResposta({ questionario, anonimo, respostaExistente 
         </div>
       ))}
 
-      <div className="flex gap-2 pt-2">
-        <button
-          type="submit"
-          disabled={enviando || enfileirado || jaEnfileirada}
-          className="btn-primary"
-        >
-          {jaEnfileirada ? 'Resposta já salva' : enfileirado ? 'Resposta salva ✓' : enviando ? (isEdicao ? 'Salvando...' : 'Enviando...') : (!isOnline ? 'Salvar offline' : (isEdicao ? 'Salvar alterações' : 'Enviar respostas'))}
-        </button>
+      <div className="flex flex-wrap gap-2 pt-2">
+        {pagina > 0 && (
+          <button
+            type="button"
+            onClick={() => irParaPagina(pagina - 1)}
+            className="btn-secondary"
+          >
+            Voltar
+          </button>
+        )}
+        {pagina < totalPaginas - 1 ? (
+          <button
+            type="button"
+            onClick={avancar}
+            className="btn-primary flex-1 min-w-[7rem]"
+          >
+            Avançar
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={enviando || enfileirado || jaEnfileirada}
+            className="btn-primary flex-1 min-w-[7rem]"
+          >
+            {jaEnfileirada ? 'Resposta já salva' : enfileirado ? 'Resposta salva ✓' : enviando ? (isEdicao ? 'Salvando...' : 'Enviando...') : (!isOnline ? 'Salvar offline' : (isEdicao ? 'Salvar alterações' : 'Enviar respostas'))}
+          </button>
+        )}
         {pending.length > 0 && (
           <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 rounded-lg" style={{ backgroundColor: 'var(--accent-dim)', color: 'var(--text-secondary)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
             </svg>
-            {pending.length} resposta(s) pendente(s) de sincronização
+            {pending.length} resposta(s) pendente(s)
           </span>
         )}
         <button

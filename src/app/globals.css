@@ -452,3 +452,20 @@ textarea.input {
 input, textarea, select {
   color: var(--text-primary);
 }
+
+/* Impressão: remove navegação, popups e chrome do app */
+@media print {
+  nav.fixed,
+  .fixed {
+    display: none !important;
+  }
+
+  main {
+    padding: 10mm !important;
+  }
+}
+
+/* Sem margem do navegador → não imprime cabeçalho/rodapé (título, URL, data, "1 of 2") */
+@page {
+  margin: 0;
+}

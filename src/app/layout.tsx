@@ -76,7 +76,7 @@ export default async function RootLayout({
           <SyncProvider />
           <Navbar usuario={usuario ? { id: usuario.id, nome: usuario.nome, isAdmin: usuario.isAdmin } : null} />
           <MobileBottomNav usuario={usuario ? { id: usuario.id, nome: usuario.nome, isAdmin: usuario.isAdmin } : null} />
-          <div className="h-[76px] hidden md:block" />
+          <div className="h-[76px] hidden md:block print:hidden" />
           <TermosChecker usuario={usuario}>
             <main className="flex-1 w-full px-4 py-6 pb-24 md:max-w-3xl md:mx-auto md:px-6 md:py-10 md:pb-10">
               {children}

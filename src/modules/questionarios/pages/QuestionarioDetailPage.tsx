@@ -279,51 +279,63 @@ export default function QuestionarioDetailPage({ questionarioId }: Props) {
       >
         <p className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Compartilhar</p>
 
-        {questionario.codigoAcesso && (
-          <div
-            className="flex items-center justify-between gap-3 rounded-lg px-4 py-3 mb-4"
-            style={{ backgroundColor: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
-          >
-            <div>
-              <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Código de acesso</p>
-              <p className="text-xl font-semibold tracking-widest" style={{ color: 'var(--text-primary)' }}>
-                {questionario.codigoAcesso}
-              </p>
-            </div>
-            <button
-              onClick={async () => {
-                try { await navigator.clipboard.writeText(questionario.codigoAcesso!) } catch { /* ignore */ }
-                setCodigoCopiado(true)
-                setTimeout(() => setCodigoCopiado(false), 2000)
-              }}
-              className={codigoCopiado ? 'btn-success' : 'btn-secondary'}
-            >
-              {codigoCopiado ? 'Copiado!' : 'Copiar código'}
-            </button>
-          </div>
-        )}
-
         <div className="flex items-start gap-4">
           {qrCode ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={qrCode} alt="QR Code" className="w-40 h-40 rounded shrink-0" />
+            <img src={qrCode} alt="QR Code" className="w-28 h-28 rounded shrink-0" />
           ) : (
-            <div className="w-40 h-40 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--input-bg)' }}>
+            <div className="w-28 h-28 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--input-bg)' }}>
               <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Gerando...</p>
             </div>
           )}
-          <div className="flex flex-col gap-2 flex-1 min-w-0">
-            <p className="text-xs break-all" style={{ color: 'var(--text-tertiary)' }}>{shareUrl}</p>
-            <button
-              onClick={async () => {
-                try { await navigator.clipboard.writeText(shareUrl) } catch { /* ignore */ }
-                setCopiado(true)
-                setTimeout(() => setCopiado(false), 2000)
-              }}
-              className={copiado ? 'btn-success' : 'btn-primary'}
-            >
-              {copiado ? 'Copiado!' : 'Copiar link'}
-            </button>
+
+          <div className="flex flex-1 min-w-0 flex-col gap-2">
+            {questionario.codigoAcesso && (
+              <div
+                className="flex items-center justify-between gap-2 rounded-lg px-3 py-2"
+                style={{ backgroundColor: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
+              >
+                <div className="min-w-0">
+                  <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>Código de acesso</p>
+                  <p className="text-lg font-semibold tracking-widest leading-tight" style={{ color: 'var(--text-primary)' }}>
+                    {questionario.codigoAcesso}
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    try { await navigator.clipboard.writeText(questionario.codigoAcesso!) } catch { /* ignore */ }
+                    setCodigoCopiado(true)
+                    setTimeout(() => setCodigoCopiado(false), 2000)
+                  }}
+                  className={codigoCopiado ? 'btn-success' : 'btn-secondary'}
+                >
+                  {codigoCopiado ? 'Copiado!' : 'Copiar'}
+                </button>
+              </div>
+            )}
+
+            <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }} title={shareUrl}>
+              {shareUrl}
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={async () => {
+                  try { await navigator.clipboard.writeText(shareUrl) } catch { /* ignore */ }
+                  setCopiado(true)
+                  setTimeout(() => setCopiado(false), 2000)
+                }}
+                className={`flex-1 min-w-[7rem] ${copiado ? 'btn-success' : 'btn-secondary'}`}
+              >
+                {copiado ? 'Copiado!' : 'Copiar link'}
+              </button>
+              <Link
+                href={`/questionarios/${questionario.id}/imprimir`}
+                className="btn-secondary flex-1 min-w-[7rem] text-center"
+              >
+                Imprimir
+              </Link>
+            </div>
           </div>
         </div>
       </div>

@@ -61,7 +61,7 @@ async function networkFirstWithCache(request) {
   }
 }
 
-// Cache first para assets estáticos (JS, CSS, icons, fonts)
+// Cache first para assets estáticos imutáveis (icons, fonts)
 async function cacheFirst(request) {
   const cached = await caches.match(request)
   if (cached) return cached
@@ -74,6 +74,22 @@ async function cacheFirst(request) {
     }
     return response
   } catch {
+    return new Response('', { status: 503, statusText: 'Offline' })
+  }
+}
+
+// Network first para JS/CSS (evita servir bundle desatualizado); fallback cache offline
+async function networkFirstStatic(request) {
+  try {
+    const response = await fetch(request)
+    if (response && response.status === 200 && request.url.startsWith('http')) {
+      const cache = await caches.open(CACHE_STATIC)
+      cache.put(request, response.clone())
+    }
+    return response
+  } catch {
+    const cached = await caches.match(request)
+    if (cached) return cached
     return new Response('', { status: 503, statusText: 'Offline' })
   }
 }
@@ -93,24 +109,21 @@ function sessionKey(request) {
   return 'anon'
 }
 
-// Stale-while-revalidate por sessão para navegação (HTML pages)
+// Network first para navegação (HTML sempre atual); fallback cache/offline
 async function navigationHandler(request) {
   const cache = await caches.open(`${CACHE_PAGES}-${sessionKey(request)}`)
   const cached = await cache.match(request)
 
-  const fetchPromise = fetch(request)
-    .then((response) => {
-      if (response && response.status === 200) {
-        cache.put(request, response.clone())
-      }
-      return response
-    })
-    .catch(() => {
-      if (cached) return cached
-      return caches.match('/offline')
-    })
-
-  return cached || fetchPromise
+  try {
+    const response = await fetch(request)
+    if (response && response.status === 200) {
+      cache.put(request, response.clone())
+    }
+    return response
+  } catch {
+    if (cached) return cached
+    return caches.match('/offline')
+  }
 }
 
 self.addEventListener('fetch', (event) => {
@@ -132,12 +145,19 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Static assets → cache first
+  // JS/CSS → network first (nunca serve bundle desatualizado)
   if (
     url.pathname.startsWith('/_next/static/') ||
-    url.pathname.startsWith('/icons/') ||
     url.pathname.endsWith('.js') ||
-    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.css')
+  ) {
+    event.respondWith(networkFirstStatic(request))
+    return
+  }
+
+  // Outros assets estáticos (icons, fonts) → cache first
+  if (
+    url.pathname.startsWith('/icons/') ||
     url.pathname.endsWith('.woff2')
   ) {
     event.respondWith(cacheFirst(request))

@@ -118,9 +118,6 @@ export default function ResponderPage({ questionarioId }: Props) {
       <h1 className="text-2xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
         {questionario.titulo}
       </h1>
-      {questionario.descricao && (
-        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{questionario.descricao}</p>
-      )}
       <FormResposta
         questionario={{
           id: questionario.id,

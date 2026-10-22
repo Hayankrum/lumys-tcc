@@ -439,6 +439,14 @@ export default function MeusQuestionariosPage() {
                         Ver
                       </Link>
 
+                      <Link
+                        href={`/questionarios/${q.id}/imprimir`}
+                        className="btn-secondary"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        Imprimir
+                      </Link>
+
                       {q.status === 'rascunho' && (
                         <>
                           <Link
