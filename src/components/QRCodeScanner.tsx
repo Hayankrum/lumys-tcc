@@ -9,6 +9,14 @@ interface QRCodeScannerProps {
   onError?: (error: string) => void
 }
 
+const ROTAS_APP = ['/questionarios', '/usuarios', '/admin', '/notificacoes', '/scanner', '/offline']
+
+function isRotaDoApp(url: URL): boolean {
+  if (url.origin === window.location.origin) return true
+  if (url.hostname === window.location.hostname) return true
+  return ROTAS_APP.some((rota) => url.pathname === rota || url.pathname.startsWith(`${rota}/`))
+}
+
 export default function QRCodeScanner({ onResult, onError }: QRCodeScannerProps) {
   const router = useRouter()
   const [isScanning, setIsScanning] = useState(false)
@@ -44,15 +52,19 @@ export default function QRCodeScanner({ onResult, onError }: QRCodeScannerProps)
 
     try {
       const url = new URL(decodedText)
-      const currentOrigin = window.location.origin
-      
-      if (url.origin === currentOrigin) {
+      const isHttp = url.protocol === 'http:' || url.protocol === 'https:'
+
+      if (isHttp && isRotaDoApp(url)) {
         router.push(url.pathname + url.search)
       } else {
         window.location.href = decodedText
       }
     } catch {
-      window.location.href = decodedText
+      if (decodedText.startsWith('/')) {
+        router.push(decodedText)
+      } else {
+        window.location.href = decodedText
+      }
     }
   }, [onResult, router])
 

@@ -1054,10 +1054,15 @@ export async function buscarQuestionarioPorCodigo(codigo: string) {
     return { error: 'Código inválido' as const }
   }
 
+  const usuario = await getUsuarioLogado()
+
   const questionario = await prisma.questionario.findFirst({
     where: {
       codigoAcesso: normalizado,
-      status: { in: ['publicado', 'encerrado'] },
+      OR: [
+        { status: { in: ['publicado', 'encerrado'] } },
+        { status: 'rascunho', autorId: usuario?.id ?? -1 },
+      ],
     },
     select: { id: true, titulo: true, status: true },
   })
